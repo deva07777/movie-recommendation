@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
     const { genre, mood } = req.query;
     
-    const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '5c2c4f697mshd1ffc21af191fb5p1c9709jsn6742deaef05f';
+    const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '15c2c4f697mshd1ffc21af191fb5p1c9709jsn6742deaef05f';
     
     const MOOD_TO_GENRES = {
         happy: 'comedy',
