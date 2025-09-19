@@ -1,4 +1,4 @@
-const TMDB_API_KEY = 'your_tmdb_api_key_here'; // Replace with actual TMDb API key
+const TMDB_API_KEY = '4d79fb69b3f9cc08488718e7792ad412';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 class TMDbAPI {
@@ -71,6 +71,27 @@ class TMDbAPI {
         } catch (error) {
             console.warn('TMDb API error:', error);
             return [];
+        }
+    }
+
+    static async fetchMovieDetails(tmdbId) {
+        try {
+            const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            
+            return {
+                Title: data.title,
+                Year: data.release_date ? data.release_date.split('-')[0] : 'N/A',
+                Runtime: data.runtime ? `${data.runtime} min` : 'N/A',
+                Genre: data.genres ? data.genres.map(g => g.name).join(', ') : 'N/A',
+                Plot: data.overview || 'No plot available.',
+                imdbRating: data.vote_average ? data.vote_average.toFixed(1) : 'N/A',
+                Poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : 'N/A'
+            };
+        } catch (error) {
+            console.warn('TMDb details error:', error);
+            return {};
         }
     }
 

@@ -107,10 +107,8 @@ class CineFlixApp {
 
     async fetchMovieByTitle(title) {
         try {
-            const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${OMDB_API_KEY}`;
-            const response = await cachedFetch.fetch(url);
-            const data = await response.json();
-            return data.Response === 'True' ? data : null;
+            const movies = await TMDbAPI.fetchMoviesByGenre('action');
+            return movies.find(movie => movie.Title.toLowerCase().includes(title.toLowerCase())) || movies[0];
         } catch (error) {
             console.warn(`Failed to fetch movie: ${title}`, error);
             return null;
@@ -119,23 +117,9 @@ class CineFlixApp {
 
     async fetchMoviesBySearch(searchTerm) {
         try {
-            const url = `https://www.omdbapi.com/?s=${encodeURIComponent(searchTerm)}&type=movie&apikey=${OMDB_API_KEY}`;
-            const response = await cachedFetch.fetch(url);
-            const data = await response.json();
-            
-            if (data.Response === 'True') {
-                // Limit concurrent requests to avoid overwhelming API
-                const moviePromises = data.Search.slice(0, 8).map(movie => 
-                    this.fetchMovieByTitle(movie.Title)
-                );
-                
-                const detailedMovies = await Promise.all(moviePromises);
-                return detailedMovies.filter(movie => movie && movie.Poster !== 'N/A');
-            }
-            return [];
+            return await TMDbAPI.fetchMoviesByGenre(searchTerm);
         } catch (error) {
             console.warn(`Search failed for: ${searchTerm}`, error);
-            // Return cached popular movies as fallback
             return this.getFallbackMovies();
         }
     }

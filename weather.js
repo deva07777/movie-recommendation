@@ -146,13 +146,8 @@ class WeatherMovieRecommender {
             ) || 'action';
             const movies = await TMDbAPI.fetchMoviesByGenre(weatherGenre);
             
-            // Get detailed info for filtering
-            const detailedMovies = await Promise.all(
-                movies.slice(0, 10).map(async movie => {
-                    const details = await this.getMovieDetails(movie.imdbID);
-                    return { ...movie, ...details };
-                })
-            );
+            // Movies from TMDb already have detailed info
+            const detailedMovies = movies;
             
             // Apply filters
             this.filteredMovies = movieFilter.filterMovies(detailedMovies);
@@ -251,13 +246,15 @@ class WeatherMovieRecommender {
         movieResult.scrollIntoView({ behavior: 'smooth' });
     }
 
-    async getMovieDetails(imdbID) {
+    async getMovieDetails(movieId) {
         try {
-            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`;
-            const response = await cachedFetch.fetch(url);
-            return await response.json();
+            if (movieId.startsWith('tmdb_')) {
+                const tmdbId = movieId.replace('tmdb_', '');
+                return await TMDbAPI.fetchMovieDetails(tmdbId);
+            }
+            return {};
         } catch (error) {
-            console.warn(`Failed to get details for ${imdbID}:`, error);
+            console.warn(`Failed to get details for ${movieId}:`, error);
             return {};
         }
     }
