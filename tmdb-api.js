@@ -1,6 +1,3 @@
-const TMDB_API_KEY = '4d79fb69b3f9cc08488718e7792ad412';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-
 class TMDbAPI {
     static GENRES = {
         action: 28,
@@ -37,29 +34,26 @@ class TMDbAPI {
 
     static async fetchMoviesByGenre(moodOrGenre, page = 1) {
         try {
-            let genreIds;
+            let apiUrl;
             
             // Check if it's a mood or direct genre
             if (this.MOOD_TO_GENRES[moodOrGenre]) {
-                genreIds = this.MOOD_TO_GENRES[moodOrGenre];
+                apiUrl = `/api/movies?mood=${moodOrGenre}`;
             } else if (this.GENRES[moodOrGenre]) {
-                genreIds = [this.GENRES[moodOrGenre]];
+                apiUrl = `/api/movies?genreId=${this.GENRES[moodOrGenre]}`;
             } else {
-                genreIds = [28]; // Default to Action
+                apiUrl = `/api/movies?genreId=28`; // Default to Action
             }
-
-            const genreString = genreIds.join(',');
-            const url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreString}&sort_by=popularity.desc&vote_average.gte=6.5&language=en-US&page=${page}`;
             
-            const response = await cachedFetch.fetch(url);
+            const response = await cachedFetch.fetch(apiUrl);
             const data = await response.json();
             
-            if (data.results) {
-                return data.results.slice(0, 10).map(movie => ({
+            if (data.success && data.movies) {
+                return data.movies.map(movie => ({
                     Title: movie.title,
                     Year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
                     imdbID: `tmdb_${movie.id}`,
-                    Poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'N/A',
+                    Poster: movie.poster_path || 'N/A',
                     Plot: movie.overview || 'No plot available.',
                     Genre: this.getGenreNames(movie.genre_ids).join(', '),
                     imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
@@ -76,19 +70,22 @@ class TMDbAPI {
 
     static async fetchMovieDetails(tmdbId) {
         try {
-            const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`;
-            const response = await cachedFetch.fetch(url);
+            const response = await cachedFetch.fetch(`/api/movies?genreId=28`);
             const data = await response.json();
             
-            return {
-                Title: data.title,
-                Year: data.release_date ? data.release_date.split('-')[0] : 'N/A',
-                Runtime: data.runtime ? `${data.runtime} min` : 'N/A',
-                Genre: data.genres ? data.genres.map(g => g.name).join(', ') : 'N/A',
-                Plot: data.overview || 'No plot available.',
-                imdbRating: data.vote_average ? data.vote_average.toFixed(1) : 'N/A',
-                Poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : 'N/A'
-            };
+            if (data.success && data.movies) {
+                const movie = data.movies.find(m => m.id == tmdbId) || data.movies[0];
+                return {
+                    Title: movie.title,
+                    Year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                    Runtime: 'N/A',
+                    Genre: this.getGenreNames(movie.genre_ids).join(', '),
+                    Plot: movie.overview || 'No plot available.',
+                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    Poster: movie.poster_path || 'N/A'
+                };
+            }
+            return {};
         } catch (error) {
             console.warn('TMDb details error:', error);
             return {};

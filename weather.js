@@ -140,11 +140,8 @@ class WeatherMovieRecommender {
         this.showLoading('Finding the perfect movie for your weather...');
         
         try {
-            const genreIds = this.getWeatherBasedGenres();
-            const weatherGenre = Object.keys(TMDbAPI.GENRES).find(key => 
-                TMDbAPI.GENRES[key] === genreIds[0]
-            ) || 'action';
-            const movies = await TMDbAPI.fetchMoviesByGenre(weatherGenre);
+            const weatherMood = this.getWeatherBasedMood();
+            const movies = await TMDbAPI.fetchMoviesByGenre(weatherMood);
             
             // Movies from TMDb already have detailed info
             const detailedMovies = movies;
@@ -189,9 +186,17 @@ class WeatherMovieRecommender {
         }
     }
 
-    getWeatherBasedGenres() {
+    getWeatherBasedMood() {
         const condition = this.currentWeather.weather[0].main.toLowerCase();
-        return TMDbAPI.getWeatherGenres(condition);
+        const weatherMoodMap = {
+            rain: 'sad',
+            clear: 'energetic', 
+            clouds: 'mysterious',
+            snow: 'romantic',
+            thunderstorm: 'thrilling',
+            fog: 'mysterious'
+        };
+        return weatherMoodMap[condition] || 'happy';
     }
 
     // Removed - now using TMDb API directly

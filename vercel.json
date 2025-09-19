@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/movies.js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "env": {
+    "TMDB_API_KEY": "4d79fb69b3f9cc08488718e7792ad412"
+  }
+}

@@ -111,13 +111,18 @@ class CineFlixApp {
             return movies.find(movie => movie.Title.toLowerCase().includes(title.toLowerCase())) || movies[0];
         } catch (error) {
             console.warn(`Failed to fetch movie: ${title}`, error);
-            return null;
+            return this.getFallbackMovies()[0];
         }
     }
 
     async fetchMoviesBySearch(searchTerm) {
         try {
-            return await TMDbAPI.fetchMoviesByGenre(searchTerm);
+            const genreMap = {
+                action: 'action', adventure: 'adventure', thriller: 'thrilling',
+                'sci-fi': 'mysterious', drama: 'sad', comedy: 'happy'
+            };
+            const mood = genreMap[searchTerm] || 'happy';
+            return await TMDbAPI.fetchMoviesByGenre(mood);
         } catch (error) {
             console.warn(`Search failed for: ${searchTerm}`, error);
             return this.getFallbackMovies();
