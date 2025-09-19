@@ -66,9 +66,9 @@ class CineFlixApp {
             console.error('Error loading featured movie:', error);
             // Use fallback data
             this.updateHeroSection({
-                Title: 'CineFlix',
+                Title: 'CineMatch',
                 Plot: 'Discover amazing movies tailored to your preferences.',
-                Poster: 'https://via.placeholder.com/400x600?text=CineFlix'
+                Poster: 'https://via.placeholder.com/400x600?text=CineMatch'
             });
         }
     }
@@ -298,7 +298,7 @@ class CineFlixApp {
             Year: '2020',
             imdbID: `fallback${index}`,
             Poster: `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`,
-            Plot: `Discover ${title} - A great movie experience.`
+            Plot: `Discover ${title} - A CineMatch recommendation.`
         }));
     }
 
