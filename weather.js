@@ -186,23 +186,29 @@ class WeatherMovieRecommender {
     }
 
     async fetchMovies(searchTerm) {
-        const page = Math.floor(Math.random() * 10) + 1;
-        const terms = [searchTerm, 'movie', 'film', 'cinema', 'action', 'drama', 'comedy'];
-        const randomTerm = terms[Math.floor(Math.random() * terms.length)];
-        
-        const response = await fetch(
-            `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}&page=${page}`
-        );
-        
-        const data = await response.json();
-        if (data.Response === 'False') {
-            const fallbackTerms = ['batman', 'superman', 'spider', 'star', 'love', 'war', 'time'];
-            const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
-            const fallbackResponse = await fetch(`https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`);
-            const fallbackData = await fallbackResponse.json();
-            return fallbackData.Search || [];
+        try {
+            const page = Math.floor(Math.random() * 5) + 1; // Reduced page range
+            const terms = [searchTerm, 'action', 'drama', 'comedy', 'thriller'];
+            const randomTerm = terms[Math.floor(Math.random() * terms.length)];
+            
+            const url = `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}&page=${page}`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            
+            if (data.Response === 'False') {
+                // Try fallback terms with caching
+                const fallbackTerms = ['batman', 'superman', 'spider', 'star', 'love'];
+                const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
+                const fallbackUrl = `https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`;
+                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
+                const fallbackData = await fallbackResponse.json();
+                return fallbackData.Search || [];
+            }
+            return data.Search || [];
+        } catch (error) {
+            console.warn('Failed to fetch movies:', error);
+            return this.getFallbackMovies();
         }
-        return data.Search || [];
     }
 
     selectWeatherAppropriateMovie(movies) {
@@ -247,11 +253,11 @@ class WeatherMovieRecommender {
 
     async getMovieDetails(imdbID) {
         try {
-            const response = await fetch(
-                `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`
-            );
+            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
             return await response.json();
         } catch (error) {
+            console.warn(`Failed to get details for ${imdbID}:`, error);
             return {};
         }
     }
@@ -307,6 +313,19 @@ class WeatherMovieRecommender {
     updateLoadingStatus(status) {
         const loadingStatus = document.getElementById('loading-status');
         loadingStatus.textContent = status;
+    }
+
+    getFallbackMovies() {
+        const fallbackMovies = [
+            'The Dark Knight', 'Inception', 'Interstellar', 'Blade Runner 2049',
+            'The Matrix', 'Pulp Fiction', 'Fight Club', 'Goodfellas'
+        ];
+        return fallbackMovies.map((title, index) => ({
+            Title: title,
+            Year: '2020',
+            imdbID: `weather_fallback${index}`,
+            Poster: `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`
+        }));
     }
 
     hideLoading() {

@@ -225,22 +225,27 @@ class MoodWeatherFusion {
     }
 
     async fetchMovies(searchTerm) {
-        const terms = [searchTerm, 'movie', 'film', 'story', 'adventure', 'mystery', 'life'];
-        const randomTerm = terms[Math.floor(Math.random() * terms.length)];
-        
-        const response = await fetch(
-            `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}`
-        );
-        
-        const data = await response.json();
-        if (data.Response === 'False') {
-            const fallbackTerms = ['love', 'war', 'time', 'world', 'man', 'woman', 'night'];
-            const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
-            const fallbackResponse = await fetch(`https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`);
-            const fallbackData = await fallbackResponse.json();
-            return fallbackData.Search || [];
+        try {
+            const terms = [searchTerm, 'movie', 'film', 'story', 'adventure'];
+            const randomTerm = terms[Math.floor(Math.random() * terms.length)];
+            
+            const url = `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            
+            if (data.Response === 'False') {
+                const fallbackTerms = ['love', 'war', 'time', 'world', 'batman'];
+                const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
+                const fallbackUrl = `https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`;
+                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
+                const fallbackData = await fallbackResponse.json();
+                return fallbackData.Search || [];
+            }
+            return data.Search || [];
+        } catch (error) {
+            console.warn('Failed to fetch movies:', error);
+            return this.getFallbackMovies();
         }
-        return data.Search || [];
     }
 
     selectFusionMovie(movies) {
@@ -282,11 +287,11 @@ class MoodWeatherFusion {
 
     async getMovieDetails(imdbID) {
         try {
-            const response = await fetch(
-                `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`
-            );
+            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
             return await response.json();
         } catch (error) {
+            console.warn(`Failed to get details for ${imdbID}:`, error);
             return {};
         }
     }
@@ -387,6 +392,19 @@ class MoodWeatherFusion {
     updateLoadingProgress(status) {
         const progress = document.getElementById('fusion-progress');
         progress.textContent = status;
+    }
+
+    getFallbackMovies() {
+        const fallbackMovies = [
+            'The Dark Knight', 'Inception', 'Interstellar', 'Pulp Fiction',
+            'The Matrix', 'Fight Club', 'Goodfellas', 'The Godfather'
+        ];
+        return fallbackMovies.map((title, index) => ({
+            Title: title,
+            Year: '2020',
+            imdbID: `mood_fallback${index}`,
+            Poster: `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`
+        }));
     }
 
     hideLoading() {

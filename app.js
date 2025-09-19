@@ -1,5 +1,12 @@
 const OMDB_API_KEY = 'e5731106';
 
+// Preload popular movie data
+const POPULAR_MOVIES = [
+    'Inception', 'The Dark Knight', 'Interstellar', 'Blade Runner 2049', 'Dune',
+    'The Matrix', 'Pulp Fiction', 'The Godfather', 'Forrest Gump', 'The Shawshank Redemption',
+    'Fight Club', 'Goodfellas', 'The Lord of the Rings', 'Star Wars', 'Titanic'
+];
+
 class CineFlixApp {
     constructor() {
         this.currentMovie = null;
@@ -47,8 +54,7 @@ class CineFlixApp {
     }
 
     async loadFeaturedMovie() {
-        const featuredMovies = ['Inception', 'The Dark Knight', 'Interstellar', 'Blade Runner 2049', 'Dune'];
-        const randomMovie = featuredMovies[Math.floor(Math.random() * featuredMovies.length)];
+        const randomMovie = POPULAR_MOVIES[Math.floor(Math.random() * POPULAR_MOVIES.length)];
         
         try {
             const movie = await this.fetchMovieByTitle(randomMovie);
@@ -58,6 +64,12 @@ class CineFlixApp {
             }
         } catch (error) {
             console.error('Error loading featured movie:', error);
+            // Use fallback data
+            this.updateHeroSection({
+                Title: 'CineFlix',
+                Plot: 'Discover amazing movies tailored to your preferences.',
+                Poster: 'https://via.placeholder.com/400x600?text=CineFlix'
+            });
         }
     }
 
@@ -72,6 +84,8 @@ class CineFlixApp {
             this.displayMoviesInCarousel('trending-movies', filteredMovies);
         } catch (error) {
             console.error('Error loading trending movies:', error);
+            this.allTrendingMovies = this.getFallbackMovies();
+            this.displayMoviesInCarousel('trending-movies', this.allTrendingMovies);
         }
     }
 
@@ -86,26 +100,44 @@ class CineFlixApp {
             this.displayMoviesInCarousel('popular-movies', filteredMovies);
         } catch (error) {
             console.error('Error loading popular movies:', error);
+            this.allPopularMovies = this.getFallbackMovies();
+            this.displayMoviesInCarousel('popular-movies', this.allPopularMovies);
         }
     }
 
     async fetchMovieByTitle(title) {
-        const response = await fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${OMDB_API_KEY}`);
-        const data = await response.json();
-        return data.Response === 'True' ? data : null;
+        try {
+            const url = `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            return data.Response === 'True' ? data : null;
+        } catch (error) {
+            console.warn(`Failed to fetch movie: ${title}`, error);
+            return null;
+        }
     }
 
     async fetchMoviesBySearch(searchTerm) {
-        const response = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(searchTerm)}&type=movie&apikey=${OMDB_API_KEY}`);
-        const data = await response.json();
-        
-        if (data.Response === 'True') {
-            const detailedMovies = await Promise.all(
-                data.Search.slice(0, 10).map(movie => this.fetchMovieByTitle(movie.Title))
-            );
-            return detailedMovies.filter(movie => movie && movie.Poster !== 'N/A');
+        try {
+            const url = `https://www.omdbapi.com/?s=${encodeURIComponent(searchTerm)}&type=movie&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            
+            if (data.Response === 'True') {
+                // Limit concurrent requests to avoid overwhelming API
+                const moviePromises = data.Search.slice(0, 8).map(movie => 
+                    this.fetchMovieByTitle(movie.Title)
+                );
+                
+                const detailedMovies = await Promise.all(moviePromises);
+                return detailedMovies.filter(movie => movie && movie.Poster !== 'N/A');
+            }
+            return [];
+        } catch (error) {
+            console.warn(`Search failed for: ${searchTerm}`, error);
+            // Return cached popular movies as fallback
+            return this.getFallbackMovies();
         }
-        return [];
     }
 
     updateHeroSection(movie) {
@@ -257,6 +289,17 @@ class CineFlixApp {
         // Apply filters to popular movies
         const filteredPopular = movieFilter.filterMovies(this.allPopularMovies);
         this.displayMoviesInCarousel('popular-movies', filteredPopular);
+    }
+
+    getFallbackMovies() {
+        // Return basic movie data for fallback
+        return POPULAR_MOVIES.slice(0, 8).map((title, index) => ({
+            Title: title,
+            Year: '2020',
+            imdbID: `fallback${index}`,
+            Poster: `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`,
+            Plot: `Discover ${title} - A great movie experience.`
+        }));
     }
 
     showNotification(message) {

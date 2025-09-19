@@ -179,18 +179,19 @@ class GenreExplorer {
     }
 
     async fetchMoviesByType(type) {
-        const searchTerm = this.getSearchTermForType(type);
-        const response = await fetch(
-            `https://www.omdbapi.com/?s=${searchTerm}&type=movie&apikey=${OMDB_API_KEY}`
-        );
-        
-        const data = await response.json();
-        if (data.Response === 'False') {
-            const fallbackResponse = await fetch(`https://www.omdbapi.com/?s=batman&type=movie&apikey=${OMDB_API_KEY}`);
-            const fallbackData = await fallbackResponse.json();
-            return fallbackData.Search || [];
-        }
-        let movies = data.Search || [];
+        try {
+            const searchTerm = this.getSearchTermForType(type);
+            const url = `https://www.omdbapi.com/?s=${searchTerm}&type=movie&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
+            const data = await response.json();
+            
+            if (data.Response === 'False') {
+                const fallbackUrl = `https://www.omdbapi.com/?s=batman&type=movie&apikey=${OMDB_API_KEY}`;
+                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
+                const fallbackData = await fallbackResponse.json();
+                return fallbackData.Search || [];
+            }
+            let movies = data.Search || [];
         
         // Get detailed info to check actual genres
         const detailedMovies = await Promise.all(
@@ -236,6 +237,10 @@ class GenreExplorer {
         }
         
         return filteredMovies.filter(movie => movie.Poster && movie.Poster !== 'N/A');
+        } catch (error) {
+            console.warn('Failed to fetch movies by type:', error);
+            return this.getFallbackMovies();
+        }
     }
 
     getSearchTermForType(type) {
@@ -339,11 +344,11 @@ class GenreExplorer {
 
     async getMovieDetails(imdbID) {
         try {
-            const response = await fetch(
-                `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`
-            );
+            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${OMDB_API_KEY}`;
+            const response = await cachedFetch.fetch(url);
             return await response.json();
         } catch (error) {
+            console.warn(`Failed to get details for ${imdbID}:`, error);
             return {};
         }
     }
@@ -429,6 +434,20 @@ class GenreExplorer {
         const loadingStatus = document.getElementById('genre-loading-status');
         loadingStatus.textContent = status;
         loading.classList.remove('hidden');
+    }
+
+    getFallbackMovies() {
+        const fallbackMovies = [
+            'The Dark Knight', 'Inception', 'Interstellar', 'The Matrix',
+            'Pulp Fiction', 'Fight Club', 'Goodfellas', 'The Godfather'
+        ];
+        return fallbackMovies.map((title, index) => ({
+            Title: title,
+            Year: '2020',
+            imdbID: `genre_fallback${index}`,
+            Poster: `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`,
+            Genre: this.selectedGenre ? this.selectedGenre.name : 'Action'
+        }));
     }
 
     hideLoading() {
