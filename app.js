@@ -74,11 +74,11 @@ class CineFlixApp {
     }
 
     async loadTrendingMovies() {
-        const trendingTerms = ['action', 'adventure', 'thriller', 'sci-fi', 'drama'];
-        const randomTerm = trendingTerms[Math.floor(Math.random() * trendingTerms.length)];
+        const trendingGenres = ['action', 'comedy', 'thriller', 'sci-fi', 'drama'];
+        const randomGenre = trendingGenres[Math.floor(Math.random() * trendingGenres.length)];
         
         try {
-            const movies = await this.fetchMoviesBySearch(randomTerm);
+            const movies = await TMDbAPI.fetchMoviesByGenre(randomGenre);
             this.allTrendingMovies = movies;
             const filteredMovies = movieFilter.filterMovies(movies);
             this.displayMoviesInCarousel('trending-movies', filteredMovies);
@@ -90,11 +90,11 @@ class CineFlixApp {
     }
 
     async loadPopularMovies() {
-        const popularTerms = ['batman', 'superman', 'marvel', 'star', 'love'];
-        const randomTerm = popularTerms[Math.floor(Math.random() * popularTerms.length)];
+        const popularGenres = ['action', 'adventure', 'comedy', 'romance', 'fantasy'];
+        const randomGenre = popularGenres[Math.floor(Math.random() * popularGenres.length)];
         
         try {
-            const movies = await this.fetchMoviesBySearch(randomTerm);
+            const movies = await TMDbAPI.fetchMoviesByGenre(randomGenre);
             this.allPopularMovies = movies;
             const filteredMovies = movieFilter.filterMovies(movies);
             this.displayMoviesInCarousel('popular-movies', filteredMovies);
@@ -154,9 +154,16 @@ class CineFlixApp {
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
             movieCard.innerHTML = `
-                <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/200x300?text=No+Image'}" 
-                     alt="${movie.Title}" 
-                     loading="lazy">
+                <div class="movie-poster-wrapper">
+                    <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/200x300?text=No+Image'}" 
+                         alt="${movie.Title}" 
+                         loading="lazy">
+                    <div class="movie-overlay">
+                        <button class="play-trailer-btn" onclick="event.stopPropagation(); TrailerUtils.openTrailer({Title: '${movie.Title}', Year: '${movie.Year}'})">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
             `;
             
             movieCard.addEventListener('click', () => this.showMovieModal(movie));
@@ -199,8 +206,7 @@ class CineFlixApp {
 
     playTrailer(movie) {
         if (!movie) return;
-        const searchQuery = encodeURIComponent(`${movie.Title} ${movie.Year} trailer`);
-        window.open(`https://www.youtube.com/results?search_query=${searchQuery}`, '_blank');
+        TrailerUtils.openTrailer(movie);
     }
 
     toggleWatchlist(movie) {

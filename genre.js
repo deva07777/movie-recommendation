@@ -180,55 +180,11 @@ class GenreExplorer {
 
     async fetchMoviesByType(type) {
         try {
-            const searchTerm = this.getSearchTermForType(type);
-            const url = `https://www.omdbapi.com/?s=${searchTerm}&type=movie&apikey=${OMDB_API_KEY}`;
-            const response = await cachedFetch.fetch(url);
-            const data = await response.json();
-            
-            if (data.Response === 'False') {
-                const fallbackUrl = `https://www.omdbapi.com/?s=batman&type=movie&apikey=${OMDB_API_KEY}`;
-                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
-                const fallbackData = await fallbackResponse.json();
-                return fallbackData.Search || [];
-            }
-            let movies = data.Search || [];
+            const movies = await TMDbAPI.fetchMoviesByGenre(this.selectedGenre.id);
         
-        // Get detailed info to check actual genres
-        const detailedMovies = await Promise.all(
-            movies.slice(0, 10).map(async movie => {
-                const details = await this.getMovieDetails(movie.imdbID);
-                return { ...movie, ...details };
-            })
-        );
-        
-        // Filter by actual genre
-        const genreKeywords = {
-            action: ['Action'],
-            adventure: ['Adventure'],
-            comedy: ['Comedy'],
-            crime: ['Crime'],
-            drama: ['Drama'],
-            family: ['Family'],
-            fantasy: ['Fantasy'],
-            horror: ['Horror'],
-            mystery: ['Mystery'],
-            romance: ['Romance'],
-            'sci-fi': ['Sci-Fi', 'Science Fiction'],
-            thriller: ['Thriller'],
-            war: ['War'],
-            western: ['Western']
-        };
-        
-        const targetGenres = genreKeywords[this.selectedGenre.id] || [];
-        let filteredMovies = detailedMovies.filter(movie => {
-            if (!movie.Genre) return false;
-            return targetGenres.some(genre => movie.Genre.includes(genre));
-        });
-        
-        // If no genre matches, return all movies (fallback)
-        if (filteredMovies.length === 0) {
-            filteredMovies = detailedMovies;
-        }
+        // Filter out already recommended movies
+        const unrecommendedMovies = recommendationTracker.filterUnrecommendedMovies(movies);
+        let filteredMovies = unrecommendedMovies.length > 0 ? unrecommendedMovies : movies;
         
         if (type === 'recent') {
             filteredMovies = filteredMovies.filter(movie => parseInt(movie.Year) >= 2020);
@@ -296,7 +252,9 @@ class GenreExplorer {
             <div class="movie-poster-wrapper">
                 <img class="movie-poster" src="${movie.Poster}" alt="${movie.Title}">
                 <div class="movie-overlay">
-                    <div class="play-icon">▶</div>
+                    <button class="play-trailer-btn" onclick="event.stopPropagation(); TrailerUtils.openTrailer({Title: '${movie.Title}', Year: '${movie.Year}'})">
+                        <i class="fas fa-play"></i> Trailer
+                    </button>
                 </div>
             </div>
             <div class="movie-info">
@@ -308,7 +266,10 @@ class GenreExplorer {
             </div>
         `;
         
-        movieCard.addEventListener('click', () => this.openMovieModal(movie));
+        movieCard.addEventListener('click', () => {
+            recommendationTracker.addRecommendedMovie(movie.imdbID);
+            this.openMovieModal(movie);
+        });
         return movieCard;
     }
 
@@ -387,6 +348,7 @@ class GenreExplorer {
     }
 
     watchTrailer(imdbID) {
+        // This method is kept for modal usage
         window.open(`https://www.imdb.com/title/${imdbID}`, '_blank');
     }
 

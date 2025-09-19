@@ -146,3 +146,50 @@
     transform: scale(1.05) translateY(-5px);
     box-shadow: var(--shadow-lg);
 }
+
+/* Trailer Button Styles */
+.movie-poster-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+}
+
+.movie-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.movie-poster-wrapper:hover .movie-overlay {
+    opacity: 1;
+}
+
+.play-trailer-btn {
+    background: var(--gradient);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+}
+
+.play-trailer-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.play-trailer-btn i {
+    margin-right: 6px;
+}

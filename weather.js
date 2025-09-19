@@ -16,6 +16,7 @@ class WeatherMovieRecommender {
         document.getElementById('recommend-again').addEventListener('click', () => this.getAnotherRecommendation());
         document.getElementById('save-movie').addEventListener('click', () => this.saveMovie());
         document.getElementById('trailer-btn').addEventListener('click', () => this.watchTrailer());
+        document.getElementById('watch-trailer').addEventListener('click', () => this.watchTrailer());
     }
     
     initializeFilters() {
@@ -51,15 +52,32 @@ class WeatherMovieRecommender {
 
     async fetchWeatherData(lat, lon) {
         try {
+            // Check cache first
+            const cachedWeather = recommendationTracker.getCachedWeather(lat, lon);
+            if (cachedWeather) {
+                this.currentWeather = cachedWeather;
+                this.displayWeather(cachedWeather);
+                this.enableRecommendationButton();
+                this.hideLoading();
+                return;
+            }
+            
             this.updateLoadingStatus('Fetching weather data...');
             
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
             const response = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`
+                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`,
+                { signal: controller.signal }
             );
+            
+            clearTimeout(timeoutId);
             
             if (!response.ok) throw new Error('Weather API error');
             
             const data = await response.json();
+            recommendationTracker.cacheWeather(lat, lon, data);
             this.currentWeather = data;
             this.displayWeather(data);
             this.enableRecommendationButton();
@@ -122,8 +140,11 @@ class WeatherMovieRecommender {
         this.showLoading('Finding the perfect movie for your weather...');
         
         try {
-            const searchTerm = this.getWeatherBasedSearchTerm();
-            const movies = await this.fetchMovies(searchTerm);
+            const genreIds = this.getWeatherBasedGenres();
+            const weatherGenre = Object.keys(TMDbAPI.GENRES).find(key => 
+                TMDbAPI.GENRES[key] === genreIds[0]
+            ) || 'action';
+            const movies = await TMDbAPI.fetchMoviesByGenre(weatherGenre);
             
             // Get detailed info for filtering
             const detailedMovies = await Promise.all(
@@ -173,47 +194,26 @@ class WeatherMovieRecommender {
         }
     }
 
-    getWeatherBasedSearchTerm() {
+    getWeatherBasedGenres() {
         const condition = this.currentWeather.weather[0].main.toLowerCase();
-        const searchTerms = {
-            rain: 'drama',
-            thunderstorm: 'thriller',
-            snow: 'romance',
-            clear: 'action',
-            clouds: 'mystery'
-        };
-        return searchTerms[condition] || 'movie';
+        return TMDbAPI.getWeatherGenres(condition);
     }
 
-    async fetchMovies(searchTerm) {
-        try {
-            const page = Math.floor(Math.random() * 5) + 1; // Reduced page range
-            const terms = [searchTerm, 'action', 'drama', 'comedy', 'thriller'];
-            const randomTerm = terms[Math.floor(Math.random() * terms.length)];
-            
-            const url = `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}&page=${page}`;
-            const response = await cachedFetch.fetch(url);
-            const data = await response.json();
-            
-            if (data.Response === 'False') {
-                // Try fallback terms with caching
-                const fallbackTerms = ['batman', 'superman', 'spider', 'star', 'love'];
-                const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
-                const fallbackUrl = `https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`;
-                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
-                const fallbackData = await fallbackResponse.json();
-                return fallbackData.Search || [];
-            }
-            return data.Search || [];
-        } catch (error) {
-            console.warn('Failed to fetch movies:', error);
-            return this.getFallbackMovies();
-        }
-    }
+    // Removed - now using TMDb API directly
 
     selectWeatherAppropriateMovie(movies) {
         const validMovies = movies.filter(movie => movie.Poster !== 'N/A');
-        return validMovies[Math.floor(Math.random() * validMovies.length)] || movies[0];
+        const unrecommendedMovies = recommendationTracker.filterUnrecommendedMovies(validMovies);
+        
+        if (unrecommendedMovies.length === 0) {
+            // If all movies have been recommended, reset and use all movies
+            recommendationTracker.clearRecommendations();
+            return validMovies[Math.floor(Math.random() * validMovies.length)] || movies[0];
+        }
+        
+        const selectedMovie = unrecommendedMovies[Math.floor(Math.random() * unrecommendedMovies.length)];
+        recommendationTracker.addRecommendedMovie(selectedMovie.imdbID);
+        return selectedMovie;
     }
 
     async displayMovie(movie) {
@@ -300,7 +300,7 @@ class WeatherMovieRecommender {
 
     watchTrailer() {
         if (!this.currentMovie) return;
-        window.open(`https://www.imdb.com/title/${this.currentMovie.imdbID}`, '_blank');
+        TrailerUtils.openTrailer(this.currentMovie);
     }
 
     showLoading(status = 'Loading...') {

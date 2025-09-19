@@ -24,6 +24,7 @@ class MoodWeatherFusion {
         document.getElementById('save-fusion').addEventListener('click', () => this.saveMovie());
         document.getElementById('share-result').addEventListener('click', () => this.shareResult());
         document.getElementById('play-trailer').addEventListener('click', () => this.playTrailer());
+        document.getElementById('watch-fusion-trailer').addEventListener('click', () => this.playTrailer());
     }
     
     initializeFilters() {
@@ -66,13 +67,35 @@ class MoodWeatherFusion {
 
     async fetchWeatherData(lat, lon) {
         try {
+            // Check cache first
+            const cachedWeather = recommendationTracker.getCachedWeather(lat, lon);
+            if (cachedWeather) {
+                this.currentWeather = {
+                    condition: cachedWeather.weather[0].main.toLowerCase(),
+                    temperature: cachedWeather.main.temp,
+                    description: cachedWeather.weather[0].description,
+                    location: `${cachedWeather.name}, ${cachedWeather.sys.country}`
+                };
+                this.displayWeather();
+                this.updateFusionStatus();
+                this.hideLoading();
+                return;
+            }
+            
             this.updateLoadingProgress('Fetching weather data...');
             
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
             const response = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`
+                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`,
+                { signal: controller.signal }
             );
             
+            clearTimeout(timeoutId);
             const data = await response.json();
+            recommendationTracker.cacheWeather(lat, lon, data);
+            
             this.currentWeather = {
                 condition: data.weather[0].main.toLowerCase(),
                 temperature: data.main.temp,
@@ -158,8 +181,8 @@ class MoodWeatherFusion {
         this.showLoading('Analyzing emotional patterns...');
         
         try {
-            const searchTerm = this.getFusionSearchTerm();
-            const movies = await this.fetchMovies(searchTerm);
+            const moodGenre = this.getFusionGenre();
+            const movies = await TMDbAPI.fetchMoviesByGenre(moodGenre);
             
             // Get detailed info for filtering
             const detailedMovies = await Promise.all(
@@ -209,48 +232,24 @@ class MoodWeatherFusion {
         }
     }
 
-    getFusionSearchTerm() {
-        const moodTerms = {
-            happy: 'comedy',
-            sad: 'drama',
-            energetic: 'action',
-            relaxed: 'romance',
-            romantic: 'romance',
-            adventurous: 'adventure',
-            nostalgic: 'drama',
-            mysterious: 'mystery'
-        };
-
-        return moodTerms[this.selectedMood] || 'movie';
+    getFusionGenre() {
+        return this.selectedMood || 'happy';
     }
 
-    async fetchMovies(searchTerm) {
-        try {
-            const terms = [searchTerm, 'movie', 'film', 'story', 'adventure'];
-            const randomTerm = terms[Math.floor(Math.random() * terms.length)];
-            
-            const url = `https://www.omdbapi.com/?s=${randomTerm}&type=movie&apikey=${OMDB_API_KEY}`;
-            const response = await cachedFetch.fetch(url);
-            const data = await response.json();
-            
-            if (data.Response === 'False') {
-                const fallbackTerms = ['love', 'war', 'time', 'world', 'batman'];
-                const fallbackTerm = fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)];
-                const fallbackUrl = `https://www.omdbapi.com/?s=${fallbackTerm}&type=movie&apikey=${OMDB_API_KEY}`;
-                const fallbackResponse = await cachedFetch.fetch(fallbackUrl);
-                const fallbackData = await fallbackResponse.json();
-                return fallbackData.Search || [];
-            }
-            return data.Search || [];
-        } catch (error) {
-            console.warn('Failed to fetch movies:', error);
-            return this.getFallbackMovies();
-        }
-    }
+    // Removed - now using TMDb API directly
 
     selectFusionMovie(movies) {
         const validMovies = movies.filter(movie => movie.Poster !== 'N/A');
-        return validMovies[Math.floor(Math.random() * validMovies.length)] || movies[0];
+        const unrecommendedMovies = recommendationTracker.filterUnrecommendedMovies(validMovies);
+        
+        if (unrecommendedMovies.length === 0) {
+            recommendationTracker.clearRecommendations();
+            return validMovies[Math.floor(Math.random() * validMovies.length)] || movies[0];
+        }
+        
+        const selectedMovie = unrecommendedMovies[Math.floor(Math.random() * unrecommendedMovies.length)];
+        recommendationTracker.addRecommendedMovie(selectedMovie.imdbID);
+        return selectedMovie;
     }
 
     async displayFusionResult(movie) {
@@ -379,7 +378,7 @@ class MoodWeatherFusion {
 
     playTrailer() {
         if (!this.currentMovie) return;
-        window.open(`https://www.imdb.com/title/${this.currentMovie.imdbID}`, '_blank');
+        TrailerUtils.openTrailer(this.currentMovie);
     }
 
     showLoading(status) {
