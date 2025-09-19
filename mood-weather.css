@@ -1,0 +1,533 @@
+.page-hero {
+    background: var(--gradient-mood);
+    padding: 6rem 0 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    animation: grain 8s linear infinite;
+}
+
+.fusion-interface {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.section-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    height: fit-content;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.mood-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.mood-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+}
+
+.mood-option:hover {
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2);
+}
+
+.mood-option.selected {
+    border-color: var(--accent-purple);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+    transform: scale(1.05);
+}
+
+.mood-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.mood-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.weather-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.weather-divider {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    position: relative;
+    padding: 0 2rem;
+}
+
+.weather-divider::before,
+.weather-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.weather-divider::before {
+    left: -50px;
+}
+
+.weather-divider::after {
+    right: -50px;
+}
+
+.weather-select {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.weather-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.weather-result {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    text-align: center;
+    animation: slideIn 0.5s ease-out;
+    backdrop-filter: blur(10px);
+}
+
+.fusion-controls {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.fusion-status {
+    margin-bottom: 2rem;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    font-weight: 500;
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+}
+
+.fusion-btn {
+    background: var(--gradient);
+    color: var(--text-primary);
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fusion-btn.disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.fusion-btn:not(.disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+}
+
+.recommendation-result {
+    max-width: 1000px;
+    margin: 0 auto;
+    animation: slideUp 0.6s ease-out;
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.result-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.fusion-score {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--gradient);
+    color: var(--text-primary);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+.score-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.score-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.movie-showcase {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 0;
+}
+
+.movie-visual {
+    position: relative;
+    overflow: hidden;
+}
+
+.showcase-poster {
+    width: 100%;
+    height: 600px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.visual-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.movie-visual:hover .visual-overlay {
+    opacity: 1;
+}
+
+.movie-visual:hover .showcase-poster {
+    transform: scale(1.05);
+}
+
+.play-trailer {
+    background: var(--accent-red);
+    color: var(--text-primary);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.play-trailer:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.movie-details {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.movie-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.movie-metadata {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.metadata-item {
+    padding: 0.5rem 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.genre-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.genre-tag {
+    background: var(--accent-purple);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.movie-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.fusion-analysis {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.fusion-analysis h4 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.analysis-points {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.analysis-point {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.analysis-point i {
+    font-size: 1.2rem;
+    color: var(--accent-blue);
+}
+
+.point-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-tertiary {
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-tertiary:hover {
+    background: var(--glass-border);
+    transform: translateY(-2px);
+}
+
+.loading-fusion {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.fusion-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.fusion-circles {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    position: relative;
+}
+
+.circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    position: relative;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.mood-circle {
+    background: var(--gradient-mood);
+    animation-delay: 0s;
+}
+
+.weather-circle {
+    background: var(--gradient-weather);
+    animation-delay: 0.5s;
+}
+
+.result-circle {
+    background: var(--gradient);
+    animation-delay: 1s;
+}
+
+.fusion-circles::before,
+.fusion-circles::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    height: 2px;
+    background: var(--accent-purple);
+    animation: expand 2s ease-in-out infinite;
+}
+
+.fusion-circles::before {
+    left: 75px;
+    width: 30px;
+}
+
+.fusion-circles::after {
+    right: 75px;
+    width: 30px;
+    animation-delay: 0.5s;
+}
+
+.loading-text h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.loading-text p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+@keyframes expand {
+    0%, 100% { transform: scaleX(0); }
+    50% { transform: scaleX(1); }
+}
+
+@media (max-width: 768px) {
+    .fusion-interface {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .mood-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .movie-showcase {
+        grid-template-columns: 1fr;
+    }
+    
+    .showcase-poster {
+        height: 400px;
+    }
+    
+    .fusion-circles {
+        gap: 1.5rem;
+    }
+    
+    .circle {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood + Weather Fusion - CineFlix</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mood-weather.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>CineFlix</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#recommendations" class="nav-link">Recommendations</a>
+                <a href="watchlist.html" class="nav-link">Watchlist</a>
+            </nav>
+            <div class="header-actions">
+                <button class="profile-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="page-hero">
+            <div class="hero-bg"></div>
+            <div class="container">
+                <h1 class="hero-title">🎭 Mood + Weather Fusion</h1>
+                <p class="hero-subtitle">AI-powered recommendations combining your emotions with weather patterns</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="filter-container"></div>
+            
+            <div class="fusion-interface">
+                <div class="mood-section">
+                    <div class="section-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-heart"></i>
+                            How are you feeling?
+                        </h3>
+                        <div class="mood-grid">
+                            <div class="mood-option" data-mood="happy">
+                                <div class="mood-emoji">😊</div>
+                                <span class="mood-label">Happy</span>
+                            </div>
+                            <div class="mood-option" data-mood="sad">
+                                <div class="mood-emoji">😢</div>
+                                <span class="mood-label">Melancholy</span>
+                            </div>
+                            <div class="mood-option" data-mood="energetic">
+                                <div class="mood-emoji">⚡</div>
+                                <span class="mood-label">Energetic</span>
+                            </div>
+                            <div class="mood-option" data-mood="relaxed">
+                                <div class="mood-emoji">😌</div>
+                                <span class="mood-label">Relaxed</span>
+                            </div>
+                            <div class="mood-option" data-mood="romantic">
+                                <div class="mood-emoji">💕</div>
+                                <span class="mood-label">Romantic</span>
+                            </div>
+                            <div class="mood-option" data-mood="adventurous">
+                                <div class="mood-emoji">🗺️</div>
+                                <span class="mood-label">Adventurous</span>
+                            </div>
+                            <div class="mood-option" data-mood="nostalgic">
+                                <div class="mood-emoji">🌅</div>
+                                <span class="mood-label">Nostalgic</span>
+                            </div>
+                            <div class="mood-option" data-mood="mysterious">
+                                <div class="mood-emoji">🔮</div>
+                                <span class="mood-label">Mysterious</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-section">
+                    <div class="section-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-cloud-sun"></i>
+                            Current Weather
+                        </h3>
+                        <div class="weather-controls">
+                            <button id="auto-detect" class="btn-primary">
+                                <i class="fas fa-location-dot"></i>
+                                Auto-Detect Weather
+                            </button>
+                            <div class="weather-divider">or</div>
+                            <div class="manual-weather">
+                                <select id="manual-weather" class="weather-select">
+                                    <option value="">Select manually</option>
+                                    <option value="sunny">☀️ Sunny</option>
+                                    <option value="cloudy">☁️ Cloudy</option>
+                                    <option value="rainy">🌧️ Rainy</option>
+                                    <option value="stormy">⛈️ Stormy</option>
+                                    <option value="snowy">❄️ Snowy</option>
+                                    <option value="foggy">🌫️ Foggy</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="weather-display" class="weather-result hidden"></div>
+                    </div>
+                </div>
+
+                <div class="fusion-controls">
+                    <div class="fusion-status" id="fusion-status">
+                        <div class="status-indicator">
+                            <i class="fas fa-magic"></i>
+                            <span class="status-text">Select mood and weather to begin</span>
+                        </div>
+                    </div>
+                    <button id="get-fusion-recommendation" class="fusion-btn disabled">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        Generate Fusion Recommendation
+                    </button>
+                </div>
+            </div>
+
+            <div id="recommendation-result" class="recommendation-result hidden">
+                <div class="result-header">
+                    <h2 class="result-title">Your Perfect Match</h2>
+                    <div class="fusion-score" id="fusion-score">
+                        <span class="score-label">Fusion Score</span>
+                        <span class="score-value">--</span>
+                    </div>
+                </div>
+                
+                <div class="movie-showcase">
+                    <div class="movie-visual">
+                        <img id="result-poster" class="showcase-poster" src="" alt="Movie Poster">
+                        <div class="visual-overlay">
+                            <button class="play-trailer" id="play-trailer">
+                                <i class="fas fa-play"></i>
+                                Watch Trailer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="movie-details">
+                        <h3 id="result-title" class="movie-title">--</h3>
+                        <div class="movie-metadata">
+                            <span class="metadata-item" id="result-rating">⭐ --</span>
+                            <span class="metadata-item" id="result-year">----</span>
+                            <span class="metadata-item" id="result-duration">-- min</span>
+                        </div>
+                        <div class="genre-tags" id="result-genres"></div>
+                        <p id="result-overview" class="movie-description">--</p>
+                        
+                        <div class="fusion-analysis">
+                            <h4><i class="fas fa-lightbulb"></i> Why This Movie?</h4>
+                            <div class="analysis-points">
+                                <div class="analysis-point mood-analysis">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="point-text" id="mood-analysis">--</span>
+                                </div>
+                                <div class="analysis-point weather-analysis">
+                                    <i class="fas fa-cloud"></i>
+                                    <span class="point-text" id="weather-analysis">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button id="new-recommendation" class="btn-primary">
+                                <i class="fas fa-refresh"></i>
+                                New Recommendation
+                            </button>
+                            <button id="save-fusion" class="btn-secondary">
+                                <i class="fas fa-bookmark"></i>
+                                Save Movie
+                            </button>
+                            <button id="share-result" class="btn-tertiary">
+                                <i class="fas fa-share"></i>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading-fusion" class="loading-fusion hidden">
+                <div class="fusion-animation">
+                    <div class="fusion-circles">
+                        <div class="circle mood-circle"></div>
+                        <div class="circle weather-circle"></div>
+                        <div class="circle result-circle"></div>
+                    </div>
+                    <div class="loading-text">
+                        <h3>Fusing Mood & Weather...</h3>
+                        <p id="fusion-progress">Analyzing emotional patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="filter-utils.js"></script>
+    <script src="mood-weather.js"></script>
+</body>
+</html>

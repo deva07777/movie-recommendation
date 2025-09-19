@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - CineFlix</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="profile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>CineFlix</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="watchlist.html" class="nav-link">Watchlist</a>
+                <a href="#" class="nav-link active">Profile</a>
+            </nav>
+            <div class="header-actions">
+                <button class="profile-btn" onclick="showProfileMenu()">
+                    <img id="header-avatar" src="" alt="Profile">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="profile-hero">
+            <div class="container">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img id="profile-avatar" src="" alt="Profile">
+                        <button class="avatar-edit"><i class="fas fa-camera"></i></button>
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="profile-name">User Name</h1>
+                        <p id="profile-email">user@email.com</p>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="movies-watched">0</span>
+                                <span class="stat-label">Movies Watched</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="avg-rating">0</span>
+                                <span class="stat-label">Avg Rating</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="lists-count">3</span>
+                                <span class="stat-label">Lists</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <nav class="profile-nav">
+                        <a href="#" class="nav-item active" data-tab="overview">
+                            <i class="fas fa-chart-line"></i>
+                            Overview
+                        </a>
+                        <a href="#" class="nav-item" data-tab="lists">
+                            <i class="fas fa-list"></i>
+                            My Lists
+                        </a>
+                        <a href="#" class="nav-item" data-tab="ratings">
+                            <i class="fas fa-star"></i>
+                            Ratings & Reviews
+                        </a>
+                        <a href="#" class="nav-item" data-tab="history">
+                            <i class="fas fa-history"></i>
+                            Viewing History
+                        </a>
+                        <a href="#" class="nav-item" data-tab="preferences">
+                            <i class="fas fa-cog"></i>
+                            Preferences
+                        </a>
+                        <a href="#" class="nav-item" data-tab="social">
+                            <i class="fas fa-users"></i>
+                            Friends
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="profile-main">
+                    <div class="tab-content active" id="overview-tab">
+                        <h2>Overview</h2>
+                        <div class="overview-grid">
+                            <div class="overview-card">
+                                <h3>Favorite Genres</h3>
+                                <div class="genre-chart" id="favorite-genres"></div>
+                            </div>
+                            <div class="overview-card">
+                                <h3>Recent Activity</h3>
+                                <div class="activity-list" id="recent-activity"></div>
+                            </div>
+                            <div class="overview-card">
+                                <h3>Recommendations</h3>
+                                <div class="recommendations-list" id="personal-recommendations"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="lists-tab">
+                        <div class="lists-header">
+                            <h2>My Lists</h2>
+                            <button class="btn-primary" onclick="createNewList()">
+                                <i class="fas fa-plus"></i>
+                                Create List
+                            </button>
+                        </div>
+                        <div class="lists-grid" id="user-lists"></div>
+                    </div>
+
+                    <div class="tab-content" id="ratings-tab">
+                        <h2>Ratings & Reviews</h2>
+                        <div class="ratings-filter">
+                            <select id="rating-filter">
+                                <option value="all">All Ratings</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="2">2 Stars</option>
+                                <option value="1">1 Star</option>
+                            </select>
+                        </div>
+                        <div class="ratings-list" id="user-ratings"></div>
+                    </div>
+
+                    <div class="tab-content" id="history-tab">
+                        <h2>Viewing History</h2>
+                        <div class="history-list" id="viewing-history"></div>
+                    </div>
+
+                    <div class="tab-content" id="preferences-tab">
+                        <h2>Preferences</h2>
+                        <div class="preferences-form">
+                            <div class="pref-section">
+                                <h3>Favorite Genres</h3>
+                                <div class="genre-selector" id="genre-preferences"></div>
+                            </div>
+                            <div class="pref-section">
+                                <h3>Content Filters</h3>
+                                <div class="filter-options">
+                                    <label><input type="checkbox" id="adult-content"> Include Adult Content</label>
+                                    <label><input type="range" id="min-rating" min="1" max="10" value="6"> Min Rating: <span id="rating-value">6</span></label>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="savePreferences()">Save Preferences</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="social-tab">
+                        <h2>Friends</h2>
+                        <div class="social-actions">
+                            <button class="btn-primary" onclick="findFriends()">
+                                <i class="fas fa-user-plus"></i>
+                                Find Friends
+                            </button>
+                            <button class="btn-secondary" onclick="shareProfile()">
+                                <i class="fas fa-share"></i>
+                                Share Profile
+                            </button>
+                        </div>
+                        <div class="friends-list" id="friends-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="profile.js"></script>
+</body>
+</html>

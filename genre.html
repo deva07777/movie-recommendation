@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genre Explorer - CineFlix</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="genre.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>CineFlix</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#recommendations" class="nav-link">Recommendations</a>
+                <a href="watchlist.html" class="nav-link">Watchlist</a>
+            </nav>
+            <div class="header-actions">
+                <button class="profile-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="page-hero">
+            <div class="hero-bg"></div>
+            <div class="container">
+                <h1 class="hero-title">🎪 Genre Explorer</h1>
+                <p class="hero-subtitle">Discover movies across 14+ genres with trending and curated selections</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="filter-container"></div>
+            
+            <div class="genre-explorer">
+                <div class="explorer-controls">
+                    <div class="search-section">
+                        <div class="search-bar">
+                            <input type="text" id="genre-search" placeholder="Search genres..." class="search-input">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="filter-options">
+                            <button class="filter-btn active" data-filter="all">
+                                <i class="fas fa-th"></i>
+                                All Genres
+                            </button>
+                            <button class="filter-btn" data-filter="popular">
+                                <i class="fas fa-fire"></i>
+                                Popular
+                            </button>
+                            <button class="filter-btn" data-filter="trending">
+                                <i class="fas fa-trending-up"></i>
+                                Trending
+                            </button>
+                            <button class="filter-btn" data-filter="classic">
+                                <i class="fas fa-crown"></i>
+                                Classic
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="genres-grid" id="genres-grid">
+                    <!-- Genres will be populated by JavaScript -->
+                </div>
+
+                <div class="selected-genre-info hidden" id="selected-genre-info">
+                    <div class="genre-header">
+                        <div class="genre-icon" id="selected-genre-icon">🎬</div>
+                        <div class="genre-details">
+                            <h2 id="selected-genre-name">Action</h2>
+                            <p id="selected-genre-description">High-energy movies with thrilling sequences</p>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation-options">
+                        <div class="option-card" data-type="trending">
+                            <div class="option-icon">🔥</div>
+                            <h4>Trending Now</h4>
+                            <p>Most popular this week</p>
+                        </div>
+                        <div class="option-card" data-type="top-rated">
+                            <div class="option-icon">⭐</div>
+                            <h4>Top Rated</h4>
+                            <p>Highest rated movies</p>
+                        </div>
+                        <div class="option-card" data-type="recent">
+                            <div class="option-icon">🆕</div>
+                            <h4>Recent Releases</h4>
+                            <p>Latest additions</p>
+                        </div>
+                        <div class="option-card" data-type="classic">
+                            <div class="option-icon">👑</div>
+                            <h4>Classics</h4>
+                            <p>Timeless masterpieces</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="movie-recommendations" class="movie-recommendations hidden">
+                <div class="recommendations-header">
+                    <h2 id="recommendations-title">Action Movies - Trending Now</h2>
+                    <div class="view-controls">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th"></i>
+                            Grid
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                            List
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="movies-container" id="movies-container">
+                    <!-- Movies will be populated by JavaScript -->
+                </div>
+                
+                <div class="load-more-section">
+                    <button id="load-more" class="load-more-btn">
+                        <i class="fas fa-plus"></i>
+                        Load More Movies
+                    </button>
+                </div>
+            </div>
+
+            <div id="movie-modal" class="movie-modal hidden">
+                <div class="modal-overlay" onclick="closeModal()"></div>
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="modal-movie">
+                        <div class="modal-poster">
+                            <img id="modal-poster-img" src="" alt="Movie Poster">
+                        </div>
+                        <div class="modal-details">
+                            <h2 id="modal-title">Movie Title</h2>
+                            <div class="modal-meta">
+                                <span id="modal-rating">⭐ 8.5</span>
+                                <span id="modal-year">2023</span>
+                                <span id="modal-runtime">120 min</span>
+                            </div>
+                            <div class="modal-genres" id="modal-genres"></div>
+                            <p id="modal-overview">Movie overview...</p>
+                            <div class="modal-actions">
+                                <button class="btn-primary" id="modal-trailer">
+                                    <i class="fas fa-play"></i>
+                                    Watch Trailer
+                                </button>
+                                <button class="btn-secondary" id="modal-save">
+                                    <i class="fas fa-bookmark"></i>
+                                    Save
+                                </button>
+                                <button class="btn-tertiary" id="modal-share">
+                                    <i class="fas fa-share"></i>
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading-genre" class="loading-genre hidden">
+                <div class="genre-loading-animation">
+                    <div class="loading-grid">
+                        <div class="loading-card"></div>
+                        <div class="loading-card"></div>
+                        <div class="loading-card"></div>
+                        <div class="loading-card"></div>
+                    </div>
+                    <div class="loading-text">
+                        <h3>Exploring Genres...</h3>
+                        <p id="genre-loading-status">Loading movie collections</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="filter-utils.js"></script>
+    <script src="genre.js"></script>
+</body>
+</html>

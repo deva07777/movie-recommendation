@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMatch-Premium Movie Experience</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-loader">
+        <div class="loader-content">
+            <div class="loader-logo">CineFlix</div>
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>CineFlix</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link active">Home</a>
+                <a href="#recommendations" class="nav-link">Recommendations</a>
+                <a href="watchlist.html" class="nav-link">Watchlist</a>
+            </nav>
+            <div class="header-actions">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search movies...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <button class="profile-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <div class="hero-info">
+                    <h1 class="hero-title" id="hero-title">Discover Your Next Favorite Movie</h1>
+                    <p class="hero-description" id="hero-description">Get personalized recommendations based on your mood, weather, and preferences. Experience cinema like never before.</p>
+                    <div class="hero-actions">
+                        <button class="btn-primary" id="hero-play">
+                            <i class="fas fa-play"></i>
+                            Watch Trailer
+                        </button>
+                        <button class="btn-secondary" id="hero-info">
+                            <i class="fas fa-info-circle"></i>
+                            More Info
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-poster">
+                    <img id="hero-poster-img" src="https://via.placeholder.com/400x600?text=Featured+Movie" alt="Featured Movie">
+                </div>
+            </div>
+        </section>
+
+        <section class="recommendations" id="recommendations">
+            <div class="section-header">
+                <h2>Personalized for You</h2>
+            </div>
+            
+            <div class="recommendation-modes">
+                <div class="mode-card" onclick="showWeatherRecommendations()">
+                    <div class="mode-icon">🌤️</div>
+                    <h3>Weather-Based</h3>
+                    <p>Perfect movies for your current weather</p>
+                </div>
+                <div class="mode-card" onclick="showMoodRecommendations()">
+                    <div class="mode-icon">🎭</div>
+                    <h3>Mood Matching</h3>
+                    <p>Movies that match your current vibe</p>
+                </div>
+                <div class="mode-card" onclick="showGenreRecommendations()">
+                    <div class="mode-icon">🎪</div>
+                    <h3>Genre Explorer</h3>
+                    <p>Discover by your favorite genres</p>
+                </div>
+            </div>
+
+            <div class="carousel-section">
+                <h3 class="carousel-title">Trending Now</h3>
+                <div class="movie-carousel" id="trending-carousel">
+                    <div class="carousel-container">
+                        <div class="movie-grid" id="trending-movies"></div>
+                    </div>
+                    <button class="carousel-btn prev" onclick="scrollCarousel('trending', -1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn next" onclick="scrollCarousel('trending', 1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="carousel-section">
+                <h3 class="carousel-title">Popular Movies</h3>
+                <div class="movie-carousel" id="popular-carousel">
+                    <div class="carousel-container">
+                        <div class="movie-grid" id="popular-movies"></div>
+                    </div>
+                    <button class="carousel-btn prev" onclick="scrollCarousel('popular', -1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn next" onclick="scrollCarousel('popular', 1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="movie-modal" id="movie-modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-hero">
+                <img id="modal-poster" src="" alt="Movie Poster">
+                <div class="modal-info">
+                    <h2 id="modal-title">Movie Title</h2>
+                    <div class="modal-meta">
+                        <span id="modal-rating">⭐ 8.5</span>
+                        <span id="modal-year">2023</span>
+                        <span id="modal-runtime">120 min</span>
+                    </div>
+                    <div class="modal-genres" id="modal-genres"></div>
+                    <p id="modal-plot">Movie plot description...</p>
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="modal-trailer">
+                            <i class="fas fa-play"></i>
+                            Watch Trailer
+                        </button>
+                        <button class="btn-secondary" id="modal-watchlist">
+                            <i class="fas fa-plus"></i>
+                            Add to Watchlist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="filter-utils.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

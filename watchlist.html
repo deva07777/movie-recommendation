@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Watchlist - CineFlix</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="watchlist.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>CineFlix</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#recommendations" class="nav-link">Recommendations</a>
+                <a href="#" class="nav-link active">Watchlist</a>
+            </nav>
+            <div class="header-actions">
+                <button class="profile-btn">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="watchlist-header">
+            <div class="container">
+                <h1 class="page-title">My Watchlist</h1>
+                <p class="page-subtitle">Your saved movies for later viewing</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="watchlist-controls">
+                <div class="controls-left">
+                    <span class="movie-count" id="movie-count">0 movies</span>
+                </div>
+                <div class="controls-right">
+                    <button class="sort-btn" id="sort-btn">
+                        <i class="fas fa-sort"></i>
+                        Sort by Date Added
+                    </button>
+                    <button class="clear-btn" id="clear-all">
+                        <i class="fas fa-trash"></i>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <div class="watchlist-grid" id="watchlist-grid">
+                <!-- Watchlist items will be populated here -->
+            </div>
+
+            <div class="empty-state" id="empty-state">
+                <div class="empty-content">
+                    <i class="fas fa-bookmark"></i>
+                    <h2>Your watchlist is empty</h2>
+                    <p>Start adding movies you want to watch later</p>
+                    <a href="index.html" class="btn-primary">
+                        <i class="fas fa-search"></i>
+                        Discover Movies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="movie-modal" id="movie-modal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-hero">
+                <img id="modal-poster" src="" alt="Movie Poster">
+                <div class="modal-info">
+                    <h2 id="modal-title">Movie Title</h2>
+                    <div class="modal-meta">
+                        <span id="modal-rating">⭐ 8.5</span>
+                        <span id="modal-year">2023</span>
+                        <span id="modal-runtime">120 min</span>
+                    </div>
+                    <div class="modal-genres" id="modal-genres"></div>
+                    <p id="modal-plot">Movie plot description...</p>
+                    <div class="modal-actions">
+                        <button class="btn-primary" id="modal-trailer">
+                            <i class="fas fa-play"></i>
+                            Watch Trailer
+                        </button>
+                        <button class="btn-danger" id="modal-remove">
+                            <i class="fas fa-trash"></i>
+                            Remove from Watchlist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="watchlist.js"></script>
+</body>
+</html>
