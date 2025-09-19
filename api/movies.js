@@ -1,9 +1,9 @@
 export default async function handler(req, res) {
-    const { genre, mood } = req.query;
+    const { genre, mood, s } = req.query;
     
-    const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '15c2c4f697mshd1ffc21af191fb5p1c9709jsn6742deaef05f';
+    const OMDB_API_KEY = process.env.OMDB_API_KEY || 'e5731106';
     
-    const MOOD_TO_GENRES = {
+    const MOOD_TO_SEARCH = {
         happy: 'comedy',
         sad: 'drama',
         romantic: 'romance',
@@ -17,34 +17,28 @@ export default async function handler(req, res) {
     };
     
     try {
-        let searchGenre = genre;
+        let searchTerm = s || genre;
         
-        if (mood && MOOD_TO_GENRES[mood]) {
-            searchGenre = MOOD_TO_GENRES[mood];
-        } else if (!searchGenre) {
-            searchGenre = 'action';
+        if (mood && MOOD_TO_SEARCH[mood]) {
+            searchTerm = MOOD_TO_SEARCH[mood];
+        } else if (!searchTerm) {
+            searchTerm = 'action';
         }
         
-        const url = `https://imdb8.p.rapidapi.com/title/v2/find?title=${searchGenre}&limit=10&sortArg=moviemeter,asc`;
+        const url = `https://www.omdbapi.com/?s=${searchTerm}&type=movie&apikey=${OMDB_API_KEY}`;
         
-        const response = await fetch(url, {
-            headers: {
-                'X-RapidAPI-Key': RAPIDAPI_KEY,
-                'X-RapidAPI-Host': 'imdb8.p.rapidapi.com'
-            }
-        });
-        
+        const response = await fetch(url);
         const data = await response.json();
         
-        if (data.results) {
-            const movies = data.results.slice(0, 10).map(movie => ({
-                id: movie.id,
-                title: movie.titleText?.text || movie.originalTitleText?.text || 'Unknown',
-                poster_path: movie.primaryImage?.url || null,
-                overview: movie.plot?.plotText?.plainText || 'No description available',
-                vote_average: movie.ratingsSummary?.aggregateRating || 0,
-                release_date: movie.releaseYear?.year || 'N/A',
-                genre: searchGenre
+        if (data.Response === 'True' && data.Search) {
+            const movies = data.Search.slice(0, 10).map(movie => ({
+                id: movie.imdbID,
+                title: movie.Title,
+                poster_path: movie.Poster !== 'N/A' ? movie.Poster : null,
+                overview: 'No description available',
+                vote_average: 0,
+                release_date: movie.Year,
+                genre: searchTerm
             }));
             
             res.status(200).json({ success: true, movies });
@@ -52,7 +46,7 @@ export default async function handler(req, res) {
             res.status(200).json({ success: false, movies: [] });
         }
     } catch (error) {
-        console.error('RapidAPI IMDb Error:', error);
+        console.error('OMDb API Error:', error);
         res.status(500).json({ success: false, error: 'Failed to fetch movies' });
     }
 }

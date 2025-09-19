@@ -1,4 +1,4 @@
-class IMDbAPI {
+class OMDbAPI {
     static GENRES = {
         action: 'action',
         adventure: 'adventure',
@@ -62,7 +62,7 @@ class IMDbAPI {
             }
             return [];
         } catch (error) {
-            console.warn('IMDb API error:', error);
+            console.warn('OMDb API error:', error);
             return [];
         }
     }
@@ -86,7 +86,7 @@ class IMDbAPI {
             }
             return {};
         } catch (error) {
-            console.warn('IMDb details error:', error);
+            console.warn('OMDb details error:', error);
             return {};
         }
     }

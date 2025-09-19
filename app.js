@@ -78,7 +78,7 @@ class CineFlixApp {
         const randomGenre = trendingGenres[Math.floor(Math.random() * trendingGenres.length)];
         
         try {
-            const movies = await IMDbAPI.fetchMoviesByGenre(randomGenre);
+            const movies = await OMDbAPI.fetchMoviesByGenre(randomGenre);
             this.allTrendingMovies = movies;
             const filteredMovies = movieFilter.filterMovies(movies);
             this.displayMoviesInCarousel('trending-movies', filteredMovies);
@@ -94,7 +94,7 @@ class CineFlixApp {
         const randomGenre = popularGenres[Math.floor(Math.random() * popularGenres.length)];
         
         try {
-            const movies = await IMDbAPI.fetchMoviesByGenre(randomGenre);
+            const movies = await OMDbAPI.fetchMoviesByGenre(randomGenre);
             this.allPopularMovies = movies;
             const filteredMovies = movieFilter.filterMovies(movies);
             this.displayMoviesInCarousel('popular-movies', filteredMovies);
@@ -122,7 +122,7 @@ class CineFlixApp {
                 'sci-fi': 'mysterious', drama: 'sad', comedy: 'happy'
             };
             const mood = genreMap[searchTerm] || 'happy';
-            return await IMDbAPI.fetchMoviesByGenre(mood);
+            return await OMDbAPI.fetchMoviesByGenre(mood);
         } catch (error) {
             console.warn(`Search failed for: ${searchTerm}`, error);
             return this.getFallbackMovies();

@@ -5,6 +5,6 @@
     }
   },
   "env": {
-    "RAPIDAPI_KEY": "15c2c4f697mshd1ffc21af191fb5p1c9709jsn6742deaef05f"
+    "OMDB_API_KEY": "e5731106"
   }
 }
