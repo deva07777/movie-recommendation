@@ -1,35 +1,35 @@
-class TMDbAPI {
+class IMDbAPI {
     static GENRES = {
-        action: 28,
-        adventure: 12,
-        animation: 16,
-        comedy: 35,
-        crime: 80,
-        documentary: 99,
-        drama: 18,
-        family: 10751,
-        fantasy: 14,
-        history: 36,
-        horror: 27,
-        music: 10402,
-        mystery: 9648,
-        romance: 10749,
-        'sci-fi': 878,
-        thriller: 53,
-        war: 10752
+        action: 'action',
+        adventure: 'adventure',
+        animation: 'animation',
+        comedy: 'comedy',
+        crime: 'crime',
+        documentary: 'documentary',
+        drama: 'drama',
+        family: 'family',
+        fantasy: 'fantasy',
+        history: 'history',
+        horror: 'horror',
+        music: 'music',
+        mystery: 'mystery',
+        romance: 'romance',
+        'sci-fi': 'sci-fi',
+        thriller: 'thriller',
+        war: 'war'
     };
 
     static MOOD_TO_GENRES = {
-        happy: [35, 10749], // Comedy, Romance
-        sad: [18], // Drama
-        energetic: [28, 12], // Action, Adventure
-        relaxed: [10749, 10751], // Romance, Family
-        romantic: [10749], // Romance
-        adventurous: [12, 14], // Adventure, Fantasy
-        nostalgic: [18, 36], // Drama, History
-        mysterious: [9648, 53], // Mystery, Thriller
-        scary: [27], // Horror
-        thrilling: [53, 27] // Thriller, Horror
+        happy: 'comedy',
+        sad: 'drama',
+        energetic: 'action',
+        relaxed: 'family',
+        romantic: 'romance',
+        adventurous: 'adventure',
+        nostalgic: 'drama',
+        mysterious: 'mystery',
+        scary: 'horror',
+        thrilling: 'thriller'
     };
 
     static async fetchMoviesByGenre(moodOrGenre, page = 1) {
@@ -40,9 +40,9 @@ class TMDbAPI {
             if (this.MOOD_TO_GENRES[moodOrGenre]) {
                 apiUrl = `/api/movies?mood=${moodOrGenre}`;
             } else if (this.GENRES[moodOrGenre]) {
-                apiUrl = `/api/movies?genreId=${this.GENRES[moodOrGenre]}`;
+                apiUrl = `/api/movies?genre=${this.GENRES[moodOrGenre]}`;
             } else {
-                apiUrl = `/api/movies?genreId=28`; // Default to Action
+                apiUrl = `/api/movies?genre=action`; // Default to Action
             }
             
             const response = await cachedFetch.fetch(apiUrl);
@@ -51,35 +51,34 @@ class TMDbAPI {
             if (data.success && data.movies) {
                 return data.movies.map(movie => ({
                     Title: movie.title,
-                    Year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
-                    imdbID: `tmdb_${movie.id}`,
+                    Year: movie.release_date || 'N/A',
+                    imdbID: movie.id,
                     Poster: movie.poster_path || 'N/A',
                     Plot: movie.overview || 'No plot available.',
-                    Genre: this.getGenreNames(movie.genre_ids).join(', '),
+                    Genre: movie.genre || 'Unknown',
                     imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    Runtime: 'N/A',
-                    tmdbId: movie.id
+                    Runtime: 'N/A'
                 }));
             }
             return [];
         } catch (error) {
-            console.warn('TMDb API error:', error);
+            console.warn('IMDb API error:', error);
             return [];
         }
     }
 
-    static async fetchMovieDetails(tmdbId) {
+    static async fetchMovieDetails(movieId) {
         try {
-            const response = await cachedFetch.fetch(`/api/movies?genreId=28`);
+            const response = await cachedFetch.fetch(`/api/movies?genre=action`);
             const data = await response.json();
             
             if (data.success && data.movies) {
-                const movie = data.movies.find(m => m.id == tmdbId) || data.movies[0];
+                const movie = data.movies.find(m => m.id == movieId) || data.movies[0];
                 return {
                     Title: movie.title,
-                    Year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                    Year: movie.release_date || 'N/A',
                     Runtime: 'N/A',
-                    Genre: this.getGenreNames(movie.genre_ids).join(', '),
+                    Genre: movie.genre || 'Unknown',
                     Plot: movie.overview || 'No plot available.',
                     imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
                     Poster: movie.poster_path || 'N/A'
@@ -87,31 +86,24 @@ class TMDbAPI {
             }
             return {};
         } catch (error) {
-            console.warn('TMDb details error:', error);
+            console.warn('IMDb details error:', error);
             return {};
         }
     }
 
-    static getGenreNames(genreIds) {
-        const genreMap = {
-            28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy',
-            80: 'Crime', 99: 'Documentary', 18: 'Drama', 10751: 'Family',
-            14: 'Fantasy', 36: 'History', 27: 'Horror', 10402: 'Music',
-            9648: 'Mystery', 10749: 'Romance', 878: 'Science Fiction',
-            53: 'Thriller', 10752: 'War', 37: 'Western'
-        };
-        return genreIds.map(id => genreMap[id] || 'Unknown').filter(Boolean);
+    static getGenreNames(genre) {
+        return [genre || 'Unknown'];
     }
 
     static getWeatherGenres(weatherCondition) {
         const weatherMap = {
-            rain: [18, 10749], // Drama, Romance
-            clear: [28, 12], // Action, Adventure
-            clouds: [9648, 53], // Mystery, Thriller
-            snow: [10749, 10751], // Romance, Family
-            thunderstorm: [53, 27], // Thriller, Horror
-            fog: [9648, 27] // Mystery, Horror
+            rain: 'drama',
+            clear: 'action',
+            clouds: 'mystery',
+            snow: 'romance',
+            thunderstorm: 'thriller',
+            fog: 'mystery'
         };
-        return weatherMap[weatherCondition] || [28]; // Default to Action
+        return weatherMap[weatherCondition] || 'action';
     }
 }

@@ -173,7 +173,7 @@ class GenreExplorer {
 
     async fetchMoviesByType(type) {
         try {
-            const movies = await TMDbAPI.fetchMoviesByGenre(this.selectedGenre.id);
+            const movies = await IMDbAPI.fetchMoviesByGenre(this.selectedGenre.id);
         
         // Filter out already recommended movies
         const unrecommendedMovies = recommendationTracker.filterUnrecommendedMovies(movies);
@@ -300,7 +300,7 @@ class GenreExplorer {
         try {
             if (movieId.startsWith('tmdb_')) {
                 const tmdbId = movieId.replace('tmdb_', '');
-                return await TMDbAPI.fetchMovieDetails(tmdbId);
+                return await IMDbAPI.fetchMovieDetails(movieId.replace('tmdb_', ''));
             }
             return {};
         } catch (error) {

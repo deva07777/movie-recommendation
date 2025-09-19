@@ -182,7 +182,7 @@ class MoodWeatherFusion {
         
         try {
             const moodGenre = this.getFusionGenre();
-            const movies = await TMDbAPI.fetchMoviesByGenre(moodGenre);
+            const movies = await IMDbAPI.fetchMoviesByGenre(moodGenre);
             
             // Movies from TMDb already have detailed info
             const detailedMovies = movies;
@@ -283,7 +283,7 @@ class MoodWeatherFusion {
         try {
             if (movieId.startsWith('tmdb_')) {
                 const tmdbId = movieId.replace('tmdb_', '');
-                return await TMDbAPI.fetchMovieDetails(tmdbId);
+                return await IMDbAPI.fetchMovieDetails(movieId.replace('tmdb_', ''));
             }
             return {};
         } catch (error) {

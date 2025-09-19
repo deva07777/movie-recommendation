@@ -141,7 +141,7 @@ class WeatherMovieRecommender {
         
         try {
             const weatherMood = this.getWeatherBasedMood();
-            const movies = await TMDbAPI.fetchMoviesByGenre(weatherMood);
+            const movies = await IMDbAPI.fetchMoviesByGenre(weatherMood);
             
             // Movies from TMDb already have detailed info
             const detailedMovies = movies;
@@ -255,7 +255,7 @@ class WeatherMovieRecommender {
         try {
             if (movieId.startsWith('tmdb_')) {
                 const tmdbId = movieId.replace('tmdb_', '');
-                return await TMDbAPI.fetchMovieDetails(tmdbId);
+                return await IMDbAPI.fetchMovieDetails(movieId.replace('tmdb_', ''));
             }
             return {};
         } catch (error) {
