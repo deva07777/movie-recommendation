@@ -1,4 +1,4 @@
-const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'e5731106';
+const OMDB_API_KEY = 'e5731106';
 
 // Preload popular movie data
 const POPULAR_MOVIES = [

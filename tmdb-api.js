@@ -48,7 +48,16 @@ class OMDbAPI {
             const data = await response.json();
             
             if (data.success && data.movies) {
-                return data.movies;
+                return data.movies.map(movie => ({
+                    Title: movie.title,
+                    Year: movie.release_date || 'N/A',
+                    imdbID: movie.id,
+                    Poster: movie.poster_path || 'N/A',
+                    Plot: movie.overview || 'No plot available.',
+                    Genre: movie.genre || 'Unknown',
+                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    Runtime: 'N/A'
+                }));
             }
             return [];
         } catch (error) {
@@ -59,11 +68,20 @@ class OMDbAPI {
 
     static async fetchMovieDetails(movieId) {
         try {
-            const response = await cachedFetch.fetch(`/api/movies?id=${movieId}`);
+            const response = await cachedFetch.fetch(`/api/movies?genre=action`);
             const data = await response.json();
             
-            if (data.success && data.movie) {
-                return data.movie;
+            if (data.success && data.movies) {
+                const movie = data.movies.find(m => m.id == movieId) || data.movies[0];
+                return {
+                    Title: movie.title,
+                    Year: movie.release_date || 'N/A',
+                    Runtime: 'N/A',
+                    Genre: movie.genre || 'Unknown',
+                    Plot: movie.overview || 'No plot available.',
+                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    Poster: movie.poster_path || 'N/A'
+                };
             }
             return {};
         } catch (error) {
@@ -73,7 +91,7 @@ class OMDbAPI {
     }
 
     static getGenreNames(genre) {
-        return genre ? genre.split(', ') : ['Unknown'];
+        return [genre || 'Unknown'];
     }
 
     static getWeatherGenres(weatherCondition) {
