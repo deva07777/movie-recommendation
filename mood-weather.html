@@ -277,7 +277,18 @@
                 updateFusionButton();
             };
             
+            document.getElementById('auto-detect').onclick = () => {
+                selectedWeather = 'sunny';
+                document.getElementById('manual-weather').value = 'sunny';
+                updateFusionButton();
+            };
+            
             document.getElementById('get-fusion-recommendation').onclick = getFusionRecommendation;
+            document.getElementById('watch-fusion-trailer').onclick = () => {
+                const title = document.getElementById('result-title').textContent;
+                if (title) window.open(`https://www.youtube.com/results?search_query=${title}+trailer`, '_blank');
+            };
+            document.getElementById('new-recommendation').onclick = getFusionRecommendation;
         });
 
         function updateFusionButton() {

@@ -215,11 +215,14 @@
                 const loadingEl = document.getElementById(`${section}-loading`);
                 const containerEl = document.getElementById(`${section}-movies`);
                 
+                const queries = ['action', 'comedy', 'drama', 'thriller', 'romance', 'adventure'];
+                const randomQuery = queries[Math.floor(Math.random() * queries.length)];
+                
                 try {
-                    console.log(`Loading ${section} movies with query: ${query}`);
+                    console.log(`Loading ${section} movies with query: ${randomQuery}`);
                     loadingEl.style.display = 'block';
                     
-                    const movies = await fetchOMDbMovies(query);
+                    const movies = await fetchOMDbMovies(randomQuery);
                     
                     if (movies && movies.length > 0) {
                         this.displayMovies(containerEl, movies);
@@ -265,7 +268,7 @@
                                  loading="lazy"
                                  onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
                             <div class="movie-overlay">
-                                <button class="play-trailer-btn">
+                                <button class="play-trailer-btn" onclick="window.open('https://www.youtube.com/results?search_query=${movie.title}+trailer', '_blank')">
                                     <i class="fas fa-play"></i>
                                 </button>
                             </div>
@@ -380,6 +383,16 @@
             setupEventListeners() {
                 document.getElementById('search-input').addEventListener('input', (e) => this.handleSearch(e.target.value));
                 document.getElementById('modal-watchlist').addEventListener('click', () => this.toggleWatchlist());
+                document.getElementById('modal-trailer').addEventListener('click', () => {
+                    if (this.currentMovie) {
+                        window.open(`https://www.youtube.com/results?search_query=${this.currentMovie.title}+trailer`, '_blank');
+                    }
+                });
+                document.getElementById('hero-play').addEventListener('click', () => {
+                    if (this.currentMovie) {
+                        window.open(`https://www.youtube.com/results?search_query=${this.currentMovie.title}+trailer`, '_blank');
+                    }
+                });
                 
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.search-container')) {

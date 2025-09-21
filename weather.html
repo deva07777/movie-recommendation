@@ -157,6 +157,16 @@
             return await response.json();
         }
 
+        async function detectWeather() {
+            document.getElementById('temperature').textContent = '22°C';
+            document.getElementById('condition').textContent = 'Partly Cloudy';
+            document.getElementById('location').textContent = 'Your Location';
+            document.getElementById('feels-like').textContent = '25°C';
+            document.getElementById('humidity').textContent = '65%';
+            document.getElementById('weather-display').classList.remove('hidden');
+            document.getElementById('get-weather-recommendation').classList.remove('disabled');
+        }
+
         async function getWeatherRecommendation() {
             const weatherConditions = ['sunny', 'rainy', 'cloudy', 'stormy'];
             const weatherGenres = {
@@ -177,7 +187,7 @@
                     
                     document.getElementById('movie-title').textContent = movie.title;
                     document.getElementById('movie-year').textContent = movie.year;
-                    document.getElementById('movie-poster').src = movie.poster;
+                    document.getElementById('movie-poster').src = movie.poster || 'https://via.placeholder.com/300x450';
                     document.getElementById('movie-overview').textContent = details.Plot || 'No plot available';
                     document.getElementById('match-reason').textContent = `Perfect for ${weather} weather!`;
                     
@@ -189,12 +199,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('detect-weather').onclick = () => {
-                document.getElementById('weather-display').classList.remove('hidden');
-                document.getElementById('get-weather-recommendation').classList.remove('disabled');
-            };
-            
+            document.getElementById('detect-weather').onclick = detectWeather;
             document.getElementById('get-weather-recommendation').onclick = getWeatherRecommendation;
+            document.getElementById('watch-trailer').onclick = () => {
+                const title = document.getElementById('movie-title').textContent;
+                if (title) window.open(`https://www.youtube.com/results?search_query=${title}+trailer`, '_blank');
+            };
+            document.getElementById('recommend-again').onclick = getWeatherRecommendation;
         });
     </script>
 </body>

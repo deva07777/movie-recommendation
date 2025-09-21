@@ -203,23 +203,27 @@
             return await response.json();
         }
 
-        function displayMovies(movies) {
+        async function displayMovies(movies) {
             const container = document.getElementById('movies-container');
             container.innerHTML = '';
             
-            movies.forEach(async movie => {
-                const details = await fetchMovieDetails(movie.imdbID);
-                const movieCard = document.createElement('div');
-                movieCard.className = 'movie-card';
-                movieCard.innerHTML = `
-                    <img src="${movie.poster || 'https://via.placeholder.com/200x300'}" alt="${movie.title}">
-                    <h3>${movie.title}</h3>
-                    <p>${movie.year}</p>
-                    <p class="plot">${details.Plot || 'No plot available'}</p>
-                `;
-                movieCard.onclick = () => showModal(movie, details);
-                container.appendChild(movieCard);
-            });
+            for (const movie of movies) {
+                try {
+                    const details = await fetchMovieDetails(movie.imdbID);
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'movie-card';
+                    movieCard.innerHTML = `
+                        <img src="${movie.poster || 'https://via.placeholder.com/200x300'}" alt="${movie.title}">
+                        <h3>${movie.title}</h3>
+                        <p>${movie.year}</p>
+                        <p class="plot">${details.Plot || 'No plot available'}</p>
+                    `;
+                    movieCard.onclick = () => showModal(movie, details);
+                    container.appendChild(movieCard);
+                } catch (error) {
+                    console.error('Error loading movie details:', error);
+                }
+            }
         }
 
         function showModal(movie, details) {
@@ -237,7 +241,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const movies = await fetchOMDbMovies('action');
-                displayMovies(movies);
+                await displayMovies(movies);
                 document.getElementById('movie-recommendations').classList.remove('hidden');
             } catch (error) {
                 console.error('Error loading movies:', error);
