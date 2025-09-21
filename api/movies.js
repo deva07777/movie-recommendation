@@ -1,52 +1,39 @@
 export default async function handler(req, res) {
-    const { genre, mood, s } = req.query;
-    
-    const OMDB_API_KEY = process.env.OMDB_API_KEY || 'e5731106';
-    
-    const MOOD_TO_SEARCH = {
-        happy: 'comedy',
-        sad: 'drama',
-        romantic: 'romance',
-        scary: 'horror',
-        thrilling: 'thriller',
-        adventurous: 'adventure',
-        energetic: 'action',
-        relaxed: 'family',
-        nostalgic: 'drama',
-        mysterious: 'mystery'
-    };
-    
-    try {
-        let searchTerm = s || genre;
-        
-        if (mood && MOOD_TO_SEARCH[mood]) {
-            searchTerm = MOOD_TO_SEARCH[mood];
-        } else if (!searchTerm) {
-            searchTerm = 'action';
-        }
-        
-        const url = `https://www.omdbapi.com/?s=${searchTerm}&type=movie&apikey=${OMDB_API_KEY}`;
-        
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.Response === 'True' && data.Search) {
-            const movies = data.Search.slice(0, 10).map(movie => ({
-                id: movie.imdbID,
-                title: movie.Title,
-                poster_path: movie.Poster !== 'N/A' ? movie.Poster : null,
-                overview: 'No description available',
-                vote_average: 0,
-                release_date: movie.Year,
-                genre: searchTerm
-            }));
-            
-            res.status(200).json({ success: true, movies });
-        } else {
-            res.status(200).json({ success: false, movies: [] });
-        }
-    } catch (error) {
-        console.error('OMDb API Error:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch movies' });
+  const { query } = req.query;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required' });
+  }
+
+  const OMDB_API_KEY = process.env.OMDB_API_KEY;
+  
+  if (!OMDB_API_KEY) {
+    return res.status(500).json({ error: 'OMDb API key not configured' });
+  }
+
+  try {
+    const response = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&type=movie&apikey=${OMDB_API_KEY}`);
+    const data = await response.json();
+
+    if (data.Response === 'False') {
+      return res.status(404).json({ error: data.Error || 'No movies found' });
     }
+
+    if (!data.Search || data.Search.length === 0) {
+      return res.status(404).json({ error: 'No movies found' });
+    }
+
+    const movies = data.Search.slice(0, 10).map(movie => ({
+      title: movie.Title,
+      year: movie.Year,
+      imdbID: movie.imdbID,
+      type: movie.Type,
+      poster: movie.Poster !== 'N/A' ? movie.Poster : null
+    }));
+
+    res.status(200).json({ movies });
+  } catch (error) {
+    console.error('OMDb API Error:', error);
+    res.status(500).json({ error: 'Failed to fetch movies' });
+  }
 }

@@ -54,17 +54,27 @@ class CineFlixApp {
     }
 
     async loadFeaturedMovie() {
-        const randomMovie = POPULAR_MOVIES[Math.floor(Math.random() * POPULAR_MOVIES.length)];
-        
         try {
-            const movie = await this.fetchMovieByTitle(randomMovie);
-            if (movie) {
+            const response = await fetch('/api/movies?genre=action');
+            const data = await response.json();
+            
+            if (data.success && data.movies && data.movies.length > 0) {
+                const movie = {
+                    Title: data.movies[0].title,
+                    Plot: data.movies[0].overview || 'Discover amazing movies tailored to your preferences.',
+                    Poster: data.movies[0].poster_path || 'https://via.placeholder.com/400x600?text=CineMatch'
+                };
                 this.currentMovie = movie;
                 this.updateHeroSection(movie);
+            } else {
+                this.updateHeroSection({
+                    Title: 'CineMatch',
+                    Plot: 'Discover amazing movies tailored to your preferences.',
+                    Poster: 'https://via.placeholder.com/400x600?text=CineMatch'
+                });
             }
         } catch (error) {
             console.error('Error loading featured movie:', error);
-            // Use fallback data
             this.updateHeroSection({
                 Title: 'CineMatch',
                 Plot: 'Discover amazing movies tailored to your preferences.',
@@ -74,14 +84,27 @@ class CineFlixApp {
     }
 
     async loadTrendingMovies() {
-        const trendingGenres = ['action', 'comedy', 'thriller', 'sci-fi', 'drama'];
-        const randomGenre = trendingGenres[Math.floor(Math.random() * trendingGenres.length)];
-        
         try {
-            const movies = await OMDbAPI.fetchMoviesByGenre(randomGenre);
-            this.allTrendingMovies = movies;
-            const filteredMovies = movieFilter.filterMovies(movies);
-            this.displayMoviesInCarousel('trending-movies', filteredMovies);
+            const response = await fetch('/api/movies?genre=action');
+            const data = await response.json();
+            
+            if (data.success && data.movies) {
+                const movies = data.movies.map(movie => ({
+                    Title: movie.title,
+                    Year: movie.release_date || 'N/A',
+                    imdbID: movie.id,
+                    Poster: movie.poster_path || 'N/A',
+                    Plot: movie.overview || 'No plot available.',
+                    Genre: movie.genre || 'Unknown',
+                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    Runtime: 'N/A'
+                }));
+                this.allTrendingMovies = movies;
+                this.displayMoviesInCarousel('trending-movies', movies);
+            } else {
+                this.allTrendingMovies = this.getFallbackMovies();
+                this.displayMoviesInCarousel('trending-movies', this.allTrendingMovies);
+            }
         } catch (error) {
             console.error('Error loading trending movies:', error);
             this.allTrendingMovies = this.getFallbackMovies();
@@ -90,14 +113,27 @@ class CineFlixApp {
     }
 
     async loadPopularMovies() {
-        const popularGenres = ['action', 'adventure', 'comedy', 'romance', 'fantasy'];
-        const randomGenre = popularGenres[Math.floor(Math.random() * popularGenres.length)];
-        
         try {
-            const movies = await OMDbAPI.fetchMoviesByGenre(randomGenre);
-            this.allPopularMovies = movies;
-            const filteredMovies = movieFilter.filterMovies(movies);
-            this.displayMoviesInCarousel('popular-movies', filteredMovies);
+            const response = await fetch('/api/movies?genre=comedy');
+            const data = await response.json();
+            
+            if (data.success && data.movies) {
+                const movies = data.movies.map(movie => ({
+                    Title: movie.title,
+                    Year: movie.release_date || 'N/A',
+                    imdbID: movie.id,
+                    Poster: movie.poster_path || 'N/A',
+                    Plot: movie.overview || 'No plot available.',
+                    Genre: movie.genre || 'Unknown',
+                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
+                    Runtime: 'N/A'
+                }));
+                this.allPopularMovies = movies;
+                this.displayMoviesInCarousel('popular-movies', movies);
+            } else {
+                this.allPopularMovies = this.getFallbackMovies();
+                this.displayMoviesInCarousel('popular-movies', this.allPopularMovies);
+            }
         } catch (error) {
             console.error('Error loading popular movies:', error);
             this.allPopularMovies = this.getFallbackMovies();
@@ -273,17 +309,22 @@ class CineFlixApp {
     }
 
     initializeFilters() {
-        // Filters will be initialized in DOMContentLoaded event
+        const filterContainer = document.getElementById('filter-container');
+        if (filterContainer) {
+            filterContainer.innerHTML = movieFilter.createFilterHTML();
+        }
     }
     
     applyFiltersToHomepage(filters) {
-        // Apply filters to trending movies
-        const filteredTrending = movieFilter.filterMovies(this.allTrendingMovies);
-        this.displayMoviesInCarousel('trending-movies', filteredTrending);
+        if (this.allTrendingMovies.length > 0) {
+            const filteredTrending = movieFilter.filterMovies(this.allTrendingMovies);
+            this.displayMoviesInCarousel('trending-movies', filteredTrending);
+        }
         
-        // Apply filters to popular movies
-        const filteredPopular = movieFilter.filterMovies(this.allPopularMovies);
-        this.displayMoviesInCarousel('popular-movies', filteredPopular);
+        if (this.allPopularMovies.length > 0) {
+            const filteredPopular = movieFilter.filterMovies(this.allPopularMovies);
+            this.displayMoviesInCarousel('popular-movies', filteredPopular);
+        }
     }
 
     getFallbackMovies() {

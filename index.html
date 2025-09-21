@@ -89,6 +89,7 @@
 
             <div class="carousel-section">
                 <h3 class="carousel-title">Trending Now</h3>
+                <div class="loading-state" id="trending-loading">Loading movies...</div>
                 <div class="movie-carousel" id="trending-carousel">
                     <div class="carousel-container">
                         <div class="movie-grid" id="trending-movies"></div>
@@ -104,6 +105,7 @@
 
             <div class="carousel-section">
                 <h3 class="carousel-title">Popular Movies</h3>
+                <div class="loading-state" id="popular-loading">Loading movies...</div>
                 <div class="movie-carousel" id="popular-carousel">
                     <div class="carousel-container">
                         <div class="movie-grid" id="popular-movies"></div>
@@ -151,13 +153,281 @@
         </div>
     </div>
 
-    <script src="cache-utils.js"></script>
-    <script src="recommendation-tracker.js"></script>
-    <script src="trailer-utils.js"></script>
-    <script src="tmdb-api.js"></script>
-    <script src="filter-utils.js"></script>
-    <script src="theme-switcher.js"></script>
-    <script src="premium-features.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // Frontend fetch function
+        async function fetchOMDbMovies(keyword) {
+            if (!keyword?.trim()) {
+                throw new Error('Search keyword is required');
+            }
+
+            try {
+                const response = await fetch(`/api/movies?query=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch movies');
+                }
+
+                return data.movies;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw new Error(error.message || 'Network error occurred');
+            }
+        }
+
+        // Main application
+        class MovieApp {
+            constructor() {
+                this.currentMovie = null;
+                this.watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
+                this.init();
+            }
+
+            async init() {
+                console.log('Initializing MovieApp...');
+                this.showLoader();
+                await this.loadAllMovies();
+                this.setupEventListeners();
+                this.hideLoader();
+            }
+
+            showLoader() {
+                document.querySelector('.page-loader').style.display = 'flex';
+            }
+
+            hideLoader() {
+                setTimeout(() => {
+                    const loader = document.querySelector('.page-loader');
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 500);
+                }, 1000);
+            }
+
+            async loadAllMovies() {
+                await Promise.all([
+                    this.loadMovieSection('trending', 'action'),
+                    this.loadMovieSection('popular', 'comedy'),
+                    this.loadFeaturedMovie()
+                ]);
+            }
+
+            async loadMovieSection(section, query) {
+                const loadingEl = document.getElementById(`${section}-loading`);
+                const containerEl = document.getElementById(`${section}-movies`);
+                
+                try {
+                    console.log(`Loading ${section} movies with query: ${query}`);
+                    loadingEl.style.display = 'block';
+                    
+                    const movies = await fetchOMDbMovies(query);
+                    
+                    if (movies && movies.length > 0) {
+                        this.displayMovies(containerEl, movies);
+                        console.log(`${section} movies loaded:`, movies.length);
+                    } else {
+                        this.displayFallbackMovies(containerEl, section);
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${section} movies:`, error);
+                    this.displayFallbackMovies(containerEl, section);
+                } finally {
+                    loadingEl.style.display = 'none';
+                }
+            }
+
+            async loadFeaturedMovie() {
+                try {
+                    const movies = await fetchOMDbMovies('batman');
+                    if (movies && movies.length > 0) {
+                        const movie = movies[0];
+                        this.updateHeroSection(movie);
+                        this.currentMovie = movie;
+                    }
+                } catch (error) {
+                    console.error('Error loading featured movie:', error);
+                    this.updateHeroSection({
+                        title: 'CineMatch',
+                        poster: 'https://via.placeholder.com/400x600?text=CineMatch'
+                    });
+                }
+            }
+
+            displayMovies(container, movies) {
+                container.innerHTML = '';
+                
+                movies.forEach(movie => {
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'movie-card';
+                    movieCard.innerHTML = `
+                        <div class="movie-poster-wrapper">
+                            <img src="${movie.poster || 'https://via.placeholder.com/200x300?text=No+Image'}" 
+                                 alt="${movie.title}" 
+                                 loading="lazy"
+                                 onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
+                            <div class="movie-overlay">
+                                <button class="play-trailer-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    movieCard.addEventListener('click', () => this.showMovieModal(movie));
+                    container.appendChild(movieCard);
+                });
+            }
+
+            displayFallbackMovies(container, section) {
+                const fallbackMovies = [
+                    { title: 'The Dark Knight', poster: 'https://via.placeholder.com/200x300?text=The+Dark+Knight', year: '2008', imdbID: 'tt0468569' },
+                    { title: 'Inception', poster: 'https://via.placeholder.com/200x300?text=Inception', year: '2010', imdbID: 'tt1375666' },
+                    { title: 'Interstellar', poster: 'https://via.placeholder.com/200x300?text=Interstellar', year: '2014', imdbID: 'tt0816692' }
+                ];
+                
+                console.log(`Displaying fallback movies for ${section}`);
+                this.displayMovies(container, fallbackMovies);
+            }
+
+            updateHeroSection(movie) {
+                document.getElementById('hero-title').textContent = movie.title || 'Discover Your Next Favorite Movie';
+                document.getElementById('hero-description').textContent = 'Get personalized recommendations based on your mood, weather, and preferences.';
+                document.getElementById('hero-poster-img').src = movie.poster || 'https://via.placeholder.com/400x600?text=Featured+Movie';
+            }
+
+            showMovieModal(movie) {
+                this.currentMovie = movie;
+                
+                document.getElementById('modal-poster').src = movie.poster || 'https://via.placeholder.com/250x375?text=No+Image';
+                document.getElementById('modal-title').textContent = movie.title;
+                document.getElementById('modal-year').textContent = movie.year;
+                document.getElementById('modal-rating').textContent = '⭐ N/A';
+                document.getElementById('modal-runtime').textContent = 'N/A';
+                document.getElementById('modal-plot').textContent = 'Plot information not available.';
+                
+                const genresContainer = document.getElementById('modal-genres');
+                genresContainer.innerHTML = '<span class="genre-tag">Movie</span>';
+                
+                const watchlistBtn = document.getElementById('modal-watchlist');
+                const isInWatchlist = this.watchlist.some(item => item.imdbID === movie.imdbID);
+                watchlistBtn.innerHTML = isInWatchlist 
+                    ? '<i class="fas fa-check"></i> In Watchlist'
+                    : '<i class="fas fa-plus"></i> Add to Watchlist';
+                
+                document.getElementById('movie-modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            toggleWatchlist() {
+                if (!this.currentMovie) return;
+                
+                const existingIndex = this.watchlist.findIndex(item => item.imdbID === this.currentMovie.imdbID);
+                
+                if (existingIndex > -1) {
+                    this.watchlist.splice(existingIndex, 1);
+                } else {
+                    this.watchlist.push({
+                        ...this.currentMovie,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+                
+                localStorage.setItem('watchlist', JSON.stringify(this.watchlist));
+                
+                const watchlistBtn = document.getElementById('modal-watchlist');
+                const isInWatchlist = existingIndex === -1;
+                watchlistBtn.innerHTML = isInWatchlist 
+                    ? '<i class="fas fa-check"></i> In Watchlist'
+                    : '<i class="fas fa-plus"></i> Add to Watchlist';
+            }
+
+            async handleSearch(query) {
+                if (query.length < 3) return;
+                
+                try {
+                    const movies = await fetchOMDbMovies(query);
+                    this.displaySearchResults(movies);
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
+            }
+
+            displaySearchResults(movies) {
+                let searchResults = document.getElementById('search-results');
+                if (!searchResults) {
+                    searchResults = document.createElement('div');
+                    searchResults.id = 'search-results';
+                    searchResults.className = 'search-results';
+                    document.querySelector('.search-container').appendChild(searchResults);
+                }
+                
+                if (movies.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">No movies found</div>';
+                    searchResults.classList.add('active');
+                    return;
+                }
+                
+                searchResults.innerHTML = movies.slice(0, 5).map(movie => `
+                    <div class="search-item" onclick="app.showMovieModal(${JSON.stringify(movie).replace(/"/g, '&quot;')})">
+                        <img src="${movie.poster || 'https://via.placeholder.com/50x75?text=No+Image'}" alt="${movie.title}">
+                        <div class="search-info">
+                            <div class="search-title">${movie.title}</div>
+                            <div class="search-year">${movie.year}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                searchResults.classList.add('active');
+            }
+
+            hideSearchResults() {
+                const searchResults = document.getElementById('search-results');
+                if (searchResults) {
+                    searchResults.classList.remove('active');
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('search-input').addEventListener('input', (e) => this.handleSearch(e.target.value));
+                document.getElementById('modal-watchlist').addEventListener('click', () => this.toggleWatchlist());
+                
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.search-container')) {
+                        this.hideSearchResults();
+                    }
+                });
+            }
+        }
+
+        // Global functions
+        function closeModal() {
+            document.getElementById('movie-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function scrollCarousel(carouselId, direction) {
+            const container = document.querySelector(`#${carouselId}-carousel .carousel-container`);
+            if (container) {
+                container.scrollBy({ left: 220 * direction, behavior: 'smooth' });
+            }
+        }
+
+        function showWeatherRecommendations() {
+            window.location.href = 'weather.html';
+        }
+
+        function showMoodRecommendations() {
+            window.location.href = 'mood-weather.html';
+        }
+
+        function showGenreRecommendations() {
+            window.location.href = 'genre.html';
+        }
+
+        // Initialize app
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new MovieApp();
+        });
+    </script>
 </body>
 </html>
