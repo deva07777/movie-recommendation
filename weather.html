@@ -144,13 +144,58 @@
         </div>
     </main>
 
-    <script src="cache-utils.js"></script>
-    <script src="recommendation-tracker.js"></script>
-    <script src="trailer-utils.js"></script>
-    <script src="tmdb-api.js"></script>
-    <script src="filter-utils.js"></script>
-    <script src="theme-switcher.js"></script>
-    <script src="premium-features.js"></script>
-    <script src="weather.js"></script>
+    <script>
+        async function fetchOMDbMovies(keyword) {
+            const response = await fetch(`/api/movies?query=${encodeURIComponent(keyword)}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            return data.movies;
+        }
+
+        async function fetchMovieDetails(imdbID) {
+            const response = await fetch(`https://www.omdbapi.com/?i=${imdbID}&apikey=e5731106`);
+            return await response.json();
+        }
+
+        async function getWeatherRecommendation() {
+            const weatherConditions = ['sunny', 'rainy', 'cloudy', 'stormy'];
+            const weatherGenres = {
+                sunny: 'comedy',
+                rainy: 'drama',
+                cloudy: 'mystery',
+                stormy: 'thriller'
+            };
+            
+            const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+            const genre = weatherGenres[weather];
+            
+            try {
+                const movies = await fetchOMDbMovies(genre);
+                if (movies.length > 0) {
+                    const movie = movies[0];
+                    const details = await fetchMovieDetails(movie.imdbID);
+                    
+                    document.getElementById('movie-title').textContent = movie.title;
+                    document.getElementById('movie-year').textContent = movie.year;
+                    document.getElementById('movie-poster').src = movie.poster;
+                    document.getElementById('movie-overview').textContent = details.Plot || 'No plot available';
+                    document.getElementById('match-reason').textContent = `Perfect for ${weather} weather!`;
+                    
+                    document.getElementById('movie-result').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error getting weather recommendation:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('detect-weather').onclick = () => {
+                document.getElementById('weather-display').classList.remove('hidden');
+                document.getElementById('get-weather-recommendation').classList.remove('disabled');
+            };
+            
+            document.getElementById('get-weather-recommendation').onclick = getWeatherRecommendation;
+        });
+    </script>
 </body>
 </html>

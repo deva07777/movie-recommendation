@@ -190,13 +190,59 @@
         </div>
     </main>
 
-    <script src="cache-utils.js"></script>
-    <script src="recommendation-tracker.js"></script>
-    <script src="trailer-utils.js"></script>
-    <script src="tmdb-api.js"></script>
-    <script src="filter-utils.js"></script>
-    <script src="theme-switcher.js"></script>
-    <script src="premium-features.js"></script>
-    <script src="genre.js"></script>
+    <script>
+        async function fetchOMDbMovies(keyword) {
+            const response = await fetch(`/api/movies?query=${encodeURIComponent(keyword)}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            return data.movies;
+        }
+
+        async function fetchMovieDetails(imdbID) {
+            const response = await fetch(`https://www.omdbapi.com/?i=${imdbID}&apikey=e5731106`);
+            return await response.json();
+        }
+
+        function displayMovies(movies) {
+            const container = document.getElementById('movies-container');
+            container.innerHTML = '';
+            
+            movies.forEach(async movie => {
+                const details = await fetchMovieDetails(movie.imdbID);
+                const movieCard = document.createElement('div');
+                movieCard.className = 'movie-card';
+                movieCard.innerHTML = `
+                    <img src="${movie.poster || 'https://via.placeholder.com/200x300'}" alt="${movie.title}">
+                    <h3>${movie.title}</h3>
+                    <p>${movie.year}</p>
+                    <p class="plot">${details.Plot || 'No plot available'}</p>
+                `;
+                movieCard.onclick = () => showModal(movie, details);
+                container.appendChild(movieCard);
+            });
+        }
+
+        function showModal(movie, details) {
+            document.getElementById('modal-title').textContent = movie.title;
+            document.getElementById('modal-year').textContent = movie.year;
+            document.getElementById('modal-poster-img').src = movie.poster;
+            document.getElementById('modal-overview').textContent = details.Plot || 'No plot available';
+            document.getElementById('movie-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('movie-modal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const movies = await fetchOMDbMovies('action');
+                displayMovies(movies);
+                document.getElementById('movie-recommendations').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading movies:', error);
+            }
+        });
+    </script>
 </body>
 </html>
