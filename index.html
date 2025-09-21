@@ -215,7 +215,10 @@
                 const loadingEl = document.getElementById(`${section}-loading`);
                 const containerEl = document.getElementById(`${section}-movies`);
                 
-                const queries = ['action', 'comedy', 'drama', 'thriller', 'romance', 'adventure'];
+                const trendingQueries = ['batman', 'superman', 'spider', 'avengers', 'star wars', 'marvel', 'disney', 'pixar'];
+                const popularQueries = ['comedy', 'romantic', 'funny', 'love', 'family', 'kids', 'animation', 'adventure'];
+                
+                const queries = section === 'trending' ? trendingQueries : popularQueries;
                 const randomQuery = queries[Math.floor(Math.random() * queries.length)];
                 
                 try {

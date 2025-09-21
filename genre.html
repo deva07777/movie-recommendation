@@ -238,14 +238,54 @@
             document.getElementById('movie-modal').classList.add('hidden');
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        const genres = [
+            {name: 'Action', icon: '💥', query: 'action'},
+            {name: 'Comedy', icon: '😂', query: 'comedy'},
+            {name: 'Drama', icon: '🎭', query: 'drama'},
+            {name: 'Horror', icon: '👻', query: 'horror'},
+            {name: 'Romance', icon: '💕', query: 'romance'},
+            {name: 'Thriller', icon: '🔪', query: 'thriller'},
+            {name: 'Adventure', icon: '🗺️', query: 'adventure'},
+            {name: 'Fantasy', icon: '🧙', query: 'fantasy'},
+            {name: 'Sci-Fi', icon: '🚀', query: 'science'},
+            {name: 'Crime', icon: '🕵️', query: 'crime'},
+            {name: 'Mystery', icon: '🔍', query: 'mystery'},
+            {name: 'Animation', icon: '🎨', query: 'animation'}
+        ];
+
+        function displayGenres() {
+            const container = document.getElementById('genres-grid');
+            container.innerHTML = '';
+            
+            genres.forEach(genre => {
+                const genreCard = document.createElement('div');
+                genreCard.className = 'genre-card';
+                genreCard.innerHTML = `
+                    <div class="genre-icon">${genre.icon}</div>
+                    <h3>${genre.name}</h3>
+                `;
+                genreCard.onclick = () => loadGenreMovies(genre);
+                container.appendChild(genreCard);
+            });
+        }
+
+        async function loadGenreMovies(genre) {
             try {
-                const movies = await fetchOMDbMovies('action');
+                const queries = [genre.query, `${genre.query} movie`, `${genre.query} film`, `best ${genre.query}`, `top ${genre.query}`];
+                const randomQuery = queries[Math.floor(Math.random() * queries.length)];
+                
+                const movies = await fetchOMDbMovies(randomQuery);
                 await displayMovies(movies);
+                
+                document.getElementById('recommendations-title').textContent = `${genre.name} Movies`;
                 document.getElementById('movie-recommendations').classList.remove('hidden');
             } catch (error) {
-                console.error('Error loading movies:', error);
+                console.error('Error loading genre movies:', error);
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            displayGenres();
         });
     </script>
 </body>
