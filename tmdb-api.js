@@ -36,29 +36,19 @@ class OMDbAPI {
         try {
             let apiUrl;
             
-            // Check if it's a mood or direct genre
             if (this.MOOD_TO_GENRES[moodOrGenre]) {
                 apiUrl = `/api/movies?mood=${moodOrGenre}`;
             } else if (this.GENRES[moodOrGenre]) {
                 apiUrl = `/api/movies?genre=${this.GENRES[moodOrGenre]}`;
             } else {
-                apiUrl = `/api/movies?genre=action`; // Default to Action
+                apiUrl = `/api/movies?genre=action`;
             }
             
             const response = await cachedFetch.fetch(apiUrl);
             const data = await response.json();
             
             if (data.success && data.movies) {
-                return data.movies.map(movie => ({
-                    Title: movie.title,
-                    Year: movie.release_date || 'N/A',
-                    imdbID: movie.id,
-                    Poster: movie.poster_path || 'N/A',
-                    Plot: movie.overview || 'No plot available.',
-                    Genre: movie.genre || 'Unknown',
-                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    Runtime: 'N/A'
-                }));
+                return data.movies;
             }
             return [];
         } catch (error) {
@@ -69,20 +59,11 @@ class OMDbAPI {
 
     static async fetchMovieDetails(movieId) {
         try {
-            const response = await cachedFetch.fetch(`/api/movies?genre=action`);
+            const response = await cachedFetch.fetch(`/api/movies?id=${movieId}`);
             const data = await response.json();
             
-            if (data.success && data.movies) {
-                const movie = data.movies.find(m => m.id == movieId) || data.movies[0];
-                return {
-                    Title: movie.title,
-                    Year: movie.release_date || 'N/A',
-                    Runtime: 'N/A',
-                    Genre: movie.genre || 'Unknown',
-                    Plot: movie.overview || 'No plot available.',
-                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    Poster: movie.poster_path || 'N/A'
-                };
+            if (data.success && data.movie) {
+                return data.movie;
             }
             return {};
         } catch (error) {
@@ -92,7 +73,7 @@ class OMDbAPI {
     }
 
     static getGenreNames(genre) {
-        return [genre || 'Unknown'];
+        return genre ? genre.split(', ') : ['Unknown'];
     }
 
     static getWeatherGenres(weatherCondition) {

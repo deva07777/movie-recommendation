@@ -1,4 +1,4 @@
-const OMDB_API_KEY = 'e5731106';
+const OMDB_API_KEY = process.env.NEXT_PUBLIC_OMDB_API_KEY || 'e5731106';
 
 // Preload popular movie data
 const POPULAR_MOVIES = [
@@ -107,7 +107,7 @@ class CineFlixApp {
 
     async fetchMovieByTitle(title) {
         try {
-            const movies = await TMDbAPI.fetchMoviesByGenre('action');
+            const movies = await OMDbAPI.fetchMoviesByGenre('action');
             return movies.find(movie => movie.Title.toLowerCase().includes(title.toLowerCase())) || movies[0];
         } catch (error) {
             console.warn(`Failed to fetch movie: ${title}`, error);
