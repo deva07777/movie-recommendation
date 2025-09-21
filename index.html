@@ -225,11 +225,11 @@
                         this.displayMovies(containerEl, movies);
                         console.log(`${section} movies loaded:`, movies.length);
                     } else {
-                        this.displayFallbackMovies(containerEl, section);
+                        containerEl.innerHTML = '<div class="error-message">No movies found</div>';
                     }
                 } catch (error) {
                     console.error(`Error loading ${section} movies:`, error);
-                    this.displayFallbackMovies(containerEl, section);
+                    containerEl.innerHTML = '<div class="error-message">Failed to load movies</div>';
                 } finally {
                     loadingEl.style.display = 'none';
                 }
@@ -277,16 +277,7 @@
                 });
             }
 
-            displayFallbackMovies(container, section) {
-                const fallbackMovies = [
-                    { title: 'The Dark Knight', poster: 'https://via.placeholder.com/200x300?text=The+Dark+Knight', year: '2008', imdbID: 'tt0468569' },
-                    { title: 'Inception', poster: 'https://via.placeholder.com/200x300?text=Inception', year: '2010', imdbID: 'tt1375666' },
-                    { title: 'Interstellar', poster: 'https://via.placeholder.com/200x300?text=Interstellar', year: '2014', imdbID: 'tt0816692' }
-                ];
-                
-                console.log(`Displaying fallback movies for ${section}`);
-                this.displayMovies(container, fallbackMovies);
-            }
+
 
             updateHeroSection(movie) {
                 document.getElementById('hero-title').textContent = movie.title || 'Discover Your Next Favorite Movie';
