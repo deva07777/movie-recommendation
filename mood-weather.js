@@ -67,7 +67,6 @@ class MoodWeatherFusion {
 
     async fetchWeatherData(lat, lon) {
         try {
-            // Check cache first
             const cachedWeather = recommendationTracker.getCachedWeather(lat, lon);
             if (cachedWeather) {
                 this.currentWeather = {
@@ -85,7 +84,7 @@ class MoodWeatherFusion {
             this.updateLoadingProgress('Fetching weather data...');
             
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             
             const response = await fetch(
                 `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`,
@@ -108,7 +107,15 @@ class MoodWeatherFusion {
             this.hideLoading();
         } catch (error) {
             this.hideLoading();
-            alert('Failed to fetch weather data');
+            // Fallback weather
+            this.currentWeather = {
+                condition: 'clear',
+                temperature: 20,
+                description: 'clear sky',
+                location: 'Your Location'
+            };
+            this.displayWeather();
+            this.updateFusionStatus();
         }
     }
 
@@ -234,8 +241,56 @@ class MoodWeatherFusion {
     // Removed - now using TMDb API directly
 
     selectFusionMovie(movies) {
-        const validMovies = movies.filter(movie => movie.Poster !== 'N/A');
-        const unrecommendedMovies = recommendationTracker.filterUnrecommendedMovies(validMovies);
+        const validMovies = movies.filter(movie => movie.Poster !== 'N/A' && !recommendationTracker.isRecommended(movie.imdbID));
+        if (validMovies.length === 0) {
+            recommendationTracker.clearRecommended();
+            return movies.filter(movie => movie.Poster !== 'N/A')[0] || movies[0];
+        }
+        const selected = validMovies[Math.floor(Math.random() * validMovies.length)];
+        recommendationTracker.addRecommended(selected.imdbID);
+        return selected;
+    }
+
+    calculateFusionScore(details) {
+        let score = 75;
+        
+        if (details.imdbRating && parseFloat(details.imdbRating) > 7) score += 15;
+        if (details.imdbRating && parseFloat(details.imdbRating) > 8) score += 10;
+        
+        return Math.min(score, 98);
+    }
+
+    async displayFusionResult(movie) {
+        const resultSection = document.getElementById('recommendation-result');
+        const details = movie;
+        
+        document.getElementById('result-poster').src = movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/400x600?text=No+Image';
+        document.getElementById('result-title').textContent = movie.Title;
+        document.getElementById('result-rating').textContent = `⭐ ${details.imdbRating || 'N/A'}`;
+        document.getElementById('result-year').textContent = movie.Year;
+        document.getElementById('result-duration').textContent = details.Runtime || 'N/A';
+        document.getElementById('result-overview').textContent = details.Plot || 'No description available.';
+        
+        const genresContainer = document.getElementById('result-genres');
+        genresContainer.innerHTML = '';
+        if (details.Genre) {
+            details.Genre.split(', ').slice(0, 3).forEach(genre => {
+                const tag = document.createElement('span');
+                tag.className = 'genre-tag';
+                tag.textContent = genre;
+                genresContainer.appendChild(tag);
+            });
+        }
+        
+        const fusionScore = this.calculateFusionScore(details);
+        document.querySelector('.score-value').textContent = `${fusionScore}%`;
+        
+        document.getElementById('mood-analysis').textContent = this.getMoodAnalysis();
+        document.getElementById('weather-analysis').textContent = this.getWeatherAnalysis();
+        
+        resultSection.classList.remove('hidden');
+        resultSection.scrollIntoView({ behavior: 'smooth' });
+    }tionTracker.filterUnrecommendedMovies(validMovies);
         
         if (unrecommendedMovies.length === 0) {
             recommendationTracker.clearRecommendations();

@@ -54,57 +54,32 @@ class CineFlixApp {
     }
 
     async loadFeaturedMovie() {
-        try {
-            const response = await fetch('/api/movies?genre=action');
-            const data = await response.json();
-            
-            if (data.success && data.movies && data.movies.length > 0) {
-                const movie = {
-                    Title: data.movies[0].title,
-                    Plot: data.movies[0].overview || 'Discover amazing movies tailored to your preferences.',
-                    Poster: data.movies[0].poster_path || 'https://via.placeholder.com/400x600?text=CineMatch'
-                };
-                this.currentMovie = movie;
-                this.updateHeroSection(movie);
-            } else {
-                this.updateHeroSection({
-                    Title: 'CineMatch',
-                    Plot: 'Discover amazing movies tailored to your preferences.',
-                    Poster: 'https://via.placeholder.com/400x600?text=CineMatch'
-                });
+        let movieIndex = 0;
+        
+        const rotateMovie = async () => {
+            try {
+                const movies = await OMDbAPI.fetchMoviesByGenre('action');
+                if (movies.length > 0) {
+                    const movie = movies[movieIndex % movies.length];
+                    this.currentMovie = movie;
+                    this.updateHeroSection(movie);
+                    movieIndex++;
+                }
+            } catch (error) {
+                console.error('Error loading featured movie:', error);
             }
-        } catch (error) {
-            console.error('Error loading featured movie:', error);
-            this.updateHeroSection({
-                Title: 'CineMatch',
-                Plot: 'Discover amazing movies tailored to your preferences.',
-                Poster: 'https://via.placeholder.com/400x600?text=CineMatch'
-            });
-        }
+        };
+        
+        await rotateMovie();
+        setInterval(rotateMovie, 10000);
     }
 
     async loadTrendingMovies() {
         try {
-            const response = await fetch('/api/movies?genre=action');
-            const data = await response.json();
-            
-            if (data.success && data.movies) {
-                const movies = data.movies.map(movie => ({
-                    Title: movie.title,
-                    Year: movie.release_date || 'N/A',
-                    imdbID: movie.id,
-                    Poster: movie.poster_path || 'N/A',
-                    Plot: movie.overview || 'No plot available.',
-                    Genre: movie.genre || 'Unknown',
-                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    Runtime: 'N/A'
-                }));
-                this.allTrendingMovies = movies;
-                this.displayMoviesInCarousel('trending-movies', movies);
-            } else {
-                this.allTrendingMovies = this.getFallbackMovies();
-                this.displayMoviesInCarousel('trending-movies', this.allTrendingMovies);
-            }
+            const movies = await OMDbAPI.fetchMoviesByGenre('energetic');
+            this.allTrendingMovies = movies;
+            const filteredMovies = movieFilter.filterMovies(movies);
+            this.displayMoviesInCarousel('trending-movies', filteredMovies);
         } catch (error) {
             console.error('Error loading trending movies:', error);
             this.allTrendingMovies = this.getFallbackMovies();
@@ -114,26 +89,10 @@ class CineFlixApp {
 
     async loadPopularMovies() {
         try {
-            const response = await fetch('/api/movies?genre=comedy');
-            const data = await response.json();
-            
-            if (data.success && data.movies) {
-                const movies = data.movies.map(movie => ({
-                    Title: movie.title,
-                    Year: movie.release_date || 'N/A',
-                    imdbID: movie.id,
-                    Poster: movie.poster_path || 'N/A',
-                    Plot: movie.overview || 'No plot available.',
-                    Genre: movie.genre || 'Unknown',
-                    imdbRating: movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A',
-                    Runtime: 'N/A'
-                }));
-                this.allPopularMovies = movies;
-                this.displayMoviesInCarousel('popular-movies', movies);
-            } else {
-                this.allPopularMovies = this.getFallbackMovies();
-                this.displayMoviesInCarousel('popular-movies', this.allPopularMovies);
-            }
+            const movies = await OMDbAPI.fetchMoviesByGenre('happy');
+            this.allPopularMovies = movies;
+            const filteredMovies = movieFilter.filterMovies(movies);
+            this.displayMoviesInCarousel('popular-movies', filteredMovies);
         } catch (error) {
             console.error('Error loading popular movies:', error);
             this.allPopularMovies = this.getFallbackMovies();
