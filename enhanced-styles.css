@@ -1,0 +1,226 @@
+/* Enhanced Aesthetic Features */
+
+.hero {
+    transition: background 1s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(229, 9, 20, 0.1), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.movie-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.movie-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(229, 9, 20, 0.3);
+}
+
+.movie-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+}
+
+.movie-card:hover .movie-overlay {
+    opacity: 1;
+}
+
+.movie-info-overlay {
+    color: white;
+    text-align: left;
+}
+
+.movie-info-overlay h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.movie-info-overlay .rating {
+    color: #ffd700;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.movie-info-overlay .plot {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    opacity: 0.9;
+}
+
+.play-trailer-btn {
+    align-self: center;
+    background: rgba(229, 9, 20, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.play-trailer-btn:hover {
+    background: #e50914;
+    transform: scale(1.1);
+}
+
+/* Weather Detection Enhancements */
+.detected-weather {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+}
+
+.weather-icon {
+    font-size: 2rem;
+}
+
+/* Fusion Loading Animation */
+.fusion-circles {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.mood-circle {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    animation-delay: 0s;
+}
+
+.weather-circle {
+    background: linear-gradient(45deg, #74b9ff, #0984e3);
+    animation-delay: 0.5s;
+}
+
+.result-circle {
+    background: linear-gradient(45deg, #00b894, #00a085);
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Genre Cards Enhancement */
+.genre-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.genre-card:hover {
+    transform: translateY(-8px) rotate(2deg);
+    box-shadow: 0 16px 48px rgba(102, 126, 234, 0.4);
+}
+
+.genre-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Modal Enhancements */
+.movie-modal.active {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Loading States */
+.loading-state {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+}
+
+.loading-state::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e50914;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .movie-card:hover {
+        transform: none;
+    }
+    
+    .movie-overlay {
+        opacity: 1;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    }
+    
+    .genre-card:hover {
+        transform: translateY(-4px);
+    }
+}

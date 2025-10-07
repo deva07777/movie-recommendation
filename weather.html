@@ -157,39 +157,116 @@
             return await response.json();
         }
 
+        let usedMovies = new Set();
+
         async function detectWeather() {
-            document.getElementById('temperature').textContent = '22°C';
-            document.getElementById('condition').textContent = 'Partly Cloudy';
-            document.getElementById('location').textContent = 'Your Location';
-            document.getElementById('feels-like').textContent = '25°C';
-            document.getElementById('humidity').textContent = '65%';
+            try {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        try {
+                            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=your_weather_api_key&units=metric`);
+                            const data = await response.json();
+                            
+                            document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
+                            document.getElementById('condition').textContent = data.weather[0].description;
+                            document.getElementById('location').textContent = data.name;
+                            document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}°C`;
+                            document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+                            
+                            const weatherIcon = getWeatherIcon(data.weather[0].main);
+                            document.getElementById('weather-icon').textContent = weatherIcon;
+                        } catch (error) {
+                            // Fallback to simulated weather
+                            setFallbackWeather();
+                        }
+                    }, () => {
+                        setFallbackWeather();
+                    });
+                } else {
+                    setFallbackWeather();
+                }
+            } catch (error) {
+                setFallbackWeather();
+            }
+            
             document.getElementById('weather-display').classList.remove('hidden');
             document.getElementById('get-weather-recommendation').classList.remove('disabled');
         }
 
+        function setFallbackWeather() {
+            const conditions = ['Sunny', 'Cloudy', 'Rainy', 'Partly Cloudy'];
+            const temps = [18, 22, 25, 28];
+            const randomIndex = Math.floor(Math.random() * conditions.length);
+            
+            document.getElementById('temperature').textContent = `${temps[randomIndex]}°C`;
+            document.getElementById('condition').textContent = conditions[randomIndex];
+            document.getElementById('location').textContent = 'Your Location';
+            document.getElementById('feels-like').textContent = `${temps[randomIndex] + 3}°C`;
+            document.getElementById('humidity').textContent = `${50 + Math.floor(Math.random() * 30)}%`;
+            document.getElementById('weather-icon').textContent = getWeatherIcon(conditions[randomIndex]);
+        }
+
+        function getWeatherIcon(condition) {
+            const icons = {
+                'Clear': '☀️',
+                'Sunny': '☀️',
+                'Clouds': '☁️',
+                'Cloudy': '☁️',
+                'Rain': '🌧️',
+                'Rainy': '🌧️',
+                'Thunderstorm': '⛈️',
+                'Snow': '❄️',
+                'Mist': '🌫️',
+                'Fog': '🌫️'
+            };
+            return icons[condition] || '🌤️';
+        }
+
         async function getWeatherRecommendation() {
-            const weatherConditions = ['sunny', 'rainy', 'cloudy', 'stormy'];
+            const condition = document.getElementById('condition').textContent.toLowerCase();
+            
             const weatherGenres = {
-                sunny: 'comedy',
-                rainy: 'drama',
-                cloudy: 'mystery',
-                stormy: 'thriller'
+                'sunny': ['comedy', 'adventure', 'family'],
+                'clear': ['comedy', 'adventure', 'family'],
+                'rainy': ['drama', 'romance', 'mystery'],
+                'cloudy': ['mystery', 'thriller', 'drama'],
+                'partly cloudy': ['action', 'adventure', 'comedy'],
+                'stormy': ['thriller', 'horror', 'action'],
+                'snow': ['romance', 'family', 'drama']
             };
             
-            const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-            const genre = weatherGenres[weather];
+            const genres = weatherGenres[condition] || ['action', 'comedy', 'drama'];
+            const randomGenre = genres[Math.floor(Math.random() * genres.length)];
             
             try {
-                const movies = await fetchOMDbMovies(genre);
+                const queries = [randomGenre, `${randomGenre} movie`, `best ${randomGenre}`, `top ${randomGenre}`];
+                let movies = [];
+                
+                for (const query of queries) {
+                    movies = await fetchOMDbMovies(query);
+                    const availableMovies = movies.filter(m => !usedMovies.has(m.imdbID));
+                    if (availableMovies.length > 0) {
+                        movies = availableMovies;
+                        break;
+                    }
+                }
+                
                 if (movies.length > 0) {
-                    const movie = movies[0];
+                    const movie = movies[Math.floor(Math.random() * movies.length)];
+                    usedMovies.add(movie.imdbID);
+                    
                     const details = await fetchMovieDetails(movie.imdbID);
                     
                     document.getElementById('movie-title').textContent = movie.title;
                     document.getElementById('movie-year').textContent = movie.year;
+                    document.getElementById('movie-rating').textContent = `⭐ ${details?.imdbRating || 'N/A'}`;
+                    document.getElementById('movie-runtime').textContent = details?.Runtime || 'N/A';
                     document.getElementById('movie-poster').src = movie.poster || 'https://via.placeholder.com/300x450';
-                    document.getElementById('movie-overview').textContent = details.Plot || 'No plot available';
-                    document.getElementById('match-reason').textContent = `Perfect for ${weather} weather!`;
+                    document.getElementById('movie-overview').textContent = details?.Plot || 'No plot available';
+                    document.getElementById('match-reason').textContent = `Perfect for ${condition} weather!`;
                     
                     document.getElementById('movie-result').classList.remove('hidden');
                 }
